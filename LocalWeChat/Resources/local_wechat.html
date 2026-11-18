@@ -1,0 +1,1628 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f7f7f7">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>微聊单机版</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2307C160'/%3E%3Cpath d='M13 15h38v28H29L17 52V43h-4z' fill='white'/%3E%3C/svg%3E">
+<style>
+:root{--green:#07c160;--green-dark:#06ad56;--bg:#f7f7f7;--panel:#fff;--panel-2:#f2f2f2;--ink:#181818;--muted:#8a8a8a;--line:rgba(0,0,0,.08);--bubble:#fff;--danger:#fa5151;--blue:#576b95;--shadow:0 12px 40px rgba(0,0,0,.16);--font-scale:1;color-scheme:light}
+body.dark{--bg:#111;--panel:#1c1c1e;--panel-2:#2c2c2e;--ink:#f2f2f2;--muted:#999;--line:rgba(255,255,255,.1);--bubble:#2c2c2e;--blue:#8da4d4;--shadow:0 12px 40px rgba(0,0,0,.45);color-scheme:dark}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;font-size:calc(16px * var(--font-scale))}
+button,input,textarea,select{font:inherit;color:inherit}button{cursor:pointer}button:disabled{opacity:.45;cursor:default}a{color:var(--blue)}
+#app{height:100dvh;max-width:560px;margin:0 auto;background:var(--bg);position:relative;overflow:hidden}
+.boot{height:100%;display:grid;place-content:center;text-align:center;gap:12px;color:var(--muted)}.boot-mark{width:58px;height:58px;border-radius:16px;background:var(--green);color:white;display:grid;place-items:center;margin:auto;font-size:25px;font-weight:700}
+.view{height:100%;display:flex;flex-direction:column;background:var(--bg)}.topbar{flex:0 0 auto;min-height:calc(56px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 8px 0;display:flex;align-items:center;border-bottom:1px solid var(--line);background:var(--panel);z-index:3}.topbar h1{font-size:17px;font-weight:600;margin:0;flex:1;text-align:center;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.topbar-title{text-align:left!important;padding-left:8px}.topbar-sub{display:block;font-size:11px;color:var(--muted);font-weight:400;margin-top:2px}.icon-btn{border:0;background:transparent;width:46px;height:46px;display:inline-grid;place-items:center;border-radius:10px;padding:0;flex:0 0 auto}.icon-btn:active{background:var(--panel-2)}.icon{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}.icon.small{width:18px;height:18px}.icon.large{width:30px;height:30px}.top-actions{display:flex;align-items:center;min-width:46px;justify-content:flex-end}.text-btn{border:0;background:transparent;min-height:44px;padding:0 12px;color:var(--green);white-space:nowrap}.text-btn.danger{color:var(--danger)}
+.content{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}.content.with-nav{padding-bottom:calc(70px + env(safe-area-inset-bottom))}.content.padded{padding:14px}.bottom-nav{position:absolute;left:0;right:0;bottom:0;min-height:calc(62px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:var(--panel);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);z-index:5}.nav-item{border:0;background:transparent;color:var(--muted);min-height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px;position:relative}.nav-item.active{color:var(--green)}.badge{position:absolute;min-width:18px;height:18px;border-radius:10px;background:var(--danger);color:white;font-size:11px;line-height:18px;text-align:center;padding:0 5px}.nav-item .badge{top:5px;left:calc(50% + 7px)}
+.search-wrap{padding:9px 12px;background:var(--panel)}.search-box{height:38px;background:var(--panel-2);border-radius:7px;display:flex;align-items:center;justify-content:center;gap:6px;color:var(--muted);width:100%;border:0;text-align:left;padding:0 12px;font-size:14px}.search-box .icon{width:18px;height:18px}.search-form{display:flex;gap:8px}.search-form input{flex:1;min-width:0;height:42px;border:0;border-radius:7px;background:var(--panel-2);padding:0 12px;font-size:16px;outline:none}.search-form button{border:0;border-radius:7px;background:var(--green);color:#fff;padding:0 16px}
+.list{background:var(--panel)}.list+.list{margin-top:10px}.row{min-height:58px;display:flex;align-items:center;gap:12px;padding:9px 14px;border:0;border-bottom:1px solid var(--line);background:var(--panel);width:100%;text-align:left;position:relative}.row:last-child{border-bottom:0}.row:active{background:var(--panel-2)}.row-main{flex:1;min-width:0}.row-title{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:6px}.row-sub{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px}.row-meta{align-self:stretch;display:flex;flex-direction:column;align-items:flex-end;justify-content:space-between;padding:3px 0;color:var(--muted);font-size:11px;flex:0 0 auto}.row .badge{position:static}.chevron{width:16px;height:16px;color:#c7c7c7;flex:0 0 auto}.row-icon{width:26px;text-align:center;color:var(--green)}.section-label{padding:12px 16px 6px;color:var(--muted);font-size:13px;background:var(--bg)}
+.avatar{width:46px;height:46px;border-radius:6px;object-fit:cover;background:#d8d8d8;color:white;display:grid;place-items:center;font-size:17px;font-weight:500;flex:0 0 auto;overflow:hidden}.avatar.small{width:38px;height:38px;font-size:14px}.avatar.large{width:64px;height:64px;font-size:23px;border-radius:9px}.avatar img{width:100%;height:100%;object-fit:cover}.avatar.ai{background:linear-gradient(145deg,#4e6bdc,#7a9bef)!important}.tag{display:inline-block;border:1px solid var(--line);border-radius:4px;color:var(--muted);font-size:10px;line-height:16px;padding:0 4px}.tag.ai-tag{color:#5574d8;border-color:#91a5e4}.pin-mark{color:var(--muted)}
+.empty{padding:64px 28px;text-align:center;color:var(--muted);font-size:14px}.empty .icon{width:46px;height:46px;margin-bottom:14px;opacity:.45}.empty-title{font-size:17px;color:var(--ink);margin-bottom:8px}.empty-actions{margin-top:18px}.primary-btn,.secondary-btn,.danger-btn{min-height:46px;border-radius:7px;padding:0 18px;border:0;display:inline-flex;align-items:center;justify-content:center;gap:7px}.primary-btn{background:var(--green);color:#fff}.primary-btn:active{background:var(--green-dark)}.secondary-btn{background:var(--panel-2);color:var(--ink)}.danger-btn{background:var(--danger);color:white}.block-btn{width:100%;margin-top:10px}.button-row{display:flex;gap:10px}.button-row>*{flex:1}
+.form-card{background:var(--panel);border-radius:10px;overflow:hidden;margin-bottom:14px}.field{padding:12px 14px;border-bottom:1px solid var(--line)}.field:last-child{border-bottom:0}.field label,.field-label{display:block;font-size:13px;color:var(--muted);margin-bottom:7px}.field input,.field textarea,.field select{width:100%;border:0;background:transparent;outline:none;font-size:16px;padding:5px 0}.field textarea{min-height:100px;resize:vertical;line-height:1.55}.field input[type=password]{letter-spacing:1px}.field-hint{font-size:12px;color:var(--muted);line-height:1.55;margin-top:7px}.inline-field{display:flex;align-items:center;gap:10px}.inline-field>label{margin:0;flex:0 0 auto}.inline-field input,.inline-field select{flex:1;min-width:0}.switch{width:50px;height:30px;border-radius:16px;background:#c8c8c8;border:0;padding:3px;transition:.2s;flex:0 0 auto}.switch:after{content:"";display:block;width:24px;height:24px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}.switch.on{background:var(--green)}.switch.on:after{transform:translateX(20px)}.switch-row{display:flex;align-items:center;gap:12px;min-height:58px;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--panel)}.switch-row:last-child{border-bottom:0}.switch-main{flex:1;min-width:0}.switch-title{font-size:16px}.switch-sub{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.4}
+.chat-content{background:var(--chat-bg,#f3f3f3);padding:12px 10px 18px}.time-divider{text-align:center;color:#a0a0a0;font-size:11px;margin:12px 0}.message-row{display:flex;align-items:flex-start;gap:8px;margin:12px 0;max-width:100%;user-select:none}.message-row.own{flex-direction:row-reverse}.message-stack{max-width:calc(100% - 104px);min-width:0}.message-sender{font-size:11px;color:var(--muted);margin:0 0 4px 3px}.own .message-sender{text-align:right;margin-right:3px}.bubble{display:inline-block;max-width:100%;padding:10px 12px;background:var(--bubble);border-radius:5px;line-height:1.48;font-size:16px;word-break:break-word;white-space:pre-wrap;position:relative;user-select:text}.own .bubble{background:#95ec69;color:#101010}.message-row:not(.own) .bubble:not(.media-bubble):before,.message-row.own .bubble:not(.media-bubble):before{content:"";position:absolute;top:13px;width:0;height:0;border:6px solid transparent}.message-row:not(.own) .bubble:not(.media-bubble):before{left:-11px;border-right-color:var(--bubble)}.message-row.own .bubble:not(.media-bubble):before{right:-11px;border-left-color:#95ec69}.bubble.error{color:var(--danger);border:1px solid rgba(250,81,81,.3)}.bubble.media-bubble{padding:3px;background:transparent}.own .bubble.media-bubble{background:transparent}.chat-image{display:block;max-width:220px;max-height:300px;min-width:110px;border-radius:5px;object-fit:cover}.chat-video{display:block;width:min(230px,60vw);max-height:310px;border-radius:5px;background:#000}.audio-btn{min-width:110px;border:0;background:transparent;display:flex;align-items:center;gap:10px;padding:2px 0}.audio-wave{display:flex;align-items:center;gap:3px;height:20px}.audio-wave i{display:block;width:3px;background:currentColor;border-radius:2px}.audio-wave i:nth-child(1){height:7px}.audio-wave i:nth-child(2){height:15px}.audio-wave i:nth-child(3){height:11px}.playing .audio-wave i{animation:wave .7s infinite alternate}.playing .audio-wave i:nth-child(2){animation-delay:.2s}@keyframes wave{to{height:4px}}.file-card{display:flex;align-items:center;gap:12px;min-width:200px}.file-card .icon{width:34px;height:34px}.file-name{font-size:14px;line-height:1.4;max-width:180px;word-break:break-all}.file-size{font-size:11px;color:var(--muted);margin-top:5px}.own .file-size{color:#48753b}.system-message{text-align:center;color:#999;font-size:12px;margin:14px 0}.highlight-message{animation:highlight 1.8s ease}@keyframes highlight{0%,40%{background:rgba(7,193,96,.2)}100%{background:transparent}}
+.composer{flex:0 0 auto;background:var(--panel);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}.composer-main{display:flex;align-items:flex-end;gap:3px;padding:6px}.composer-main .icon-btn{width:42px;height:44px}.composer-input{flex:1;min-width:0;min-height:42px;max-height:110px;border:0;border-radius:6px;background:var(--panel-2);padding:10px;font-size:16px;resize:none;outline:none;line-height:1.35}.send-btn{height:40px;border:0;border-radius:5px;background:var(--green);color:#fff;padding:0 14px;margin-bottom:2px}.more-panel,.emotion-panel{display:none;grid-template-columns:repeat(4,1fr);padding:14px 12px 20px;gap:18px 8px;border-top:1px solid var(--line)}.more-panel.open,.emotion-panel.open{display:grid}.tool-item{border:0;background:transparent;color:var(--ink);font-size:12px;display:flex;flex-direction:column;align-items:center;gap:7px;min-height:66px}.tool-icon{width:52px;height:52px;border-radius:10px;background:var(--panel-2);display:grid;place-items:center}.emotion-panel{grid-template-columns:repeat(4,1fr)}.emotion-item{border:0;background:var(--panel-2);border-radius:6px;min-height:44px;font-family:monospace;font-size:15px}.voice-btn{display:none;flex:1;height:42px;border:0;border-radius:6px;background:var(--panel-2);font-weight:600}.voice-btn.recording{background:#d5d5d5}.composer.voice-mode .composer-input,.composer.voice-mode .send-btn{display:none}.composer.voice-mode .voice-btn{display:block}.typing{display:inline-flex;gap:4px;padding:5px 0}.typing i{width:6px;height:6px;border-radius:50%;background:#999;animation:typing 1s infinite}.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}@keyframes typing{50%{transform:translateY(-4px)}}
+.moments-view{position:relative}.moments-view .topbar{position:absolute;top:0;left:0;right:0;background:linear-gradient(rgba(0,0,0,.42),transparent);border-bottom:0;color:#fff;z-index:12}.moments-view .topbar h1{opacity:0}.moments-view .topbar .icon-btn{color:#fff}.moments-view .topbar .icon-btn:active{background:rgba(255,255,255,.16)}.moment-cover{height:310px;background:linear-gradient(145deg,#8ba3b4,#344e65);position:relative;margin-bottom:52px;overflow:visible}.moment-cover-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.cover-edit{position:absolute;left:14px;bottom:14px;border:0;border-radius:4px;background:rgba(0,0,0,.28);color:rgba(255,255,255,.9);min-height:32px;padding:0 10px;font-size:12px}.moment-cover:after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 65%,rgba(0,0,0,.28));pointer-events:none}.moment-profile{position:absolute;right:16px;bottom:-32px;display:flex;align-items:flex-start;gap:12px;color:white;font-weight:600;text-shadow:0 1px 3px rgba(0,0,0,.4);z-index:1}.moment-profile .avatar{border:2px solid white;width:70px;height:70px;border-radius:8px;position:relative;z-index:1}.moment-profile span{position:relative;z-index:1;padding-top:12px;font-size:17px}.moment-item{display:flex;gap:10px;padding:16px 14px;border-bottom:1px solid var(--line);background:var(--panel)}.moment-body{flex:1;min-width:0}.moment-author{color:var(--blue);font-weight:600;font-size:16px;margin-bottom:6px;border:0;background:transparent;padding:0;min-height:24px;text-align:left}.moment-text{font-size:16px;line-height:1.5;white-space:pre-wrap;word-break:break-word}.moment-location{font-size:13px;color:var(--blue);margin-top:7px}.moment-footer{display:flex;align-items:center;justify-content:space-between;margin-top:8px;color:var(--muted);font-size:12px;min-height:30px}.moment-more{width:38px;height:28px;border:0;border-radius:4px;background:var(--panel-2);color:var(--blue);display:grid;place-items:center;padding:0}.moment-menu-overlay{position:fixed;inset:0;z-index:65;background:transparent}.moment-popover{position:fixed;display:flex;background:#4c4c4c;border-radius:6px;color:#fff;box-shadow:0 4px 16px rgba(0,0,0,.25);overflow:hidden}.moment-popover:after{content:"";position:absolute;right:10px;bottom:-5px;width:10px;height:10px;background:#4c4c4c;transform:rotate(45deg)}.moment-popover button{flex:1;min-width:0;height:46px;border:0;border-right:1px solid rgba(255,255,255,.12);background:transparent;color:#fff;display:flex;align-items:center;justify-content:center;gap:5px;font-size:14px;white-space:nowrap;padding:0 8px}.moment-popover button:last-child{border-right:0}.social-box{background:var(--panel-2);border-radius:4px;margin-top:8px;padding:7px 9px;font-size:13px;line-height:1.55}.social-likes{color:var(--blue);border-bottom:1px solid var(--line);padding-bottom:4px;margin-bottom:4px}.comment{display:block;width:100%;margin-top:3px;word-break:break-word;border:0;background:transparent;text-align:left;padding:2px 0;font-size:13px;line-height:1.55;color:var(--ink)}.comment b{color:var(--blue);font-weight:500}.media-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:8px;max-width:310px}.media-grid.count-1{grid-template-columns:minmax(0,220px)}.media-grid.count-2,.media-grid.count-4{grid-template-columns:repeat(2,1fr);max-width:250px}.media-cell{position:relative;aspect-ratio:1;background:#ddd;border-radius:3px;overflow:hidden;border:0;padding:0}.media-cell img,.media-cell video{width:100%;height:100%;object-fit:cover;display:block}.media-cell.single{aspect-ratio:auto;max-height:340px}.media-cell.single img,.media-cell.single video{height:auto;max-height:340px}.video-mark{position:absolute;right:7px;bottom:7px;color:#fff;filter:drop-shadow(0 1px 2px #000);pointer-events:none}.draft-media{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;padding:12px 14px}.draft-media .media-cell{aspect-ratio:1}.draft-remove{position:absolute;right:3px;top:3px;width:26px;height:26px;border:0;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;font-size:17px}.add-media{aspect-ratio:1;border:1px dashed #bbb;background:var(--panel-2);color:var(--muted);display:grid;place-items:center;border-radius:4px;min-height:90px}
+.status-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:12px}.status-option{min-height:82px;border:2px solid transparent;border-radius:10px;background:var(--panel);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--ink)}.status-option.selected{border-color:var(--green);color:var(--green)}.status-symbol{width:34px;height:34px;border-radius:50%;background:var(--panel-2);display:grid;place-items:center;font-size:13px;font-weight:700}.color-swatches{display:flex;gap:12px;flex-wrap:wrap;padding:12px 14px}.color-swatch{width:42px;height:42px;border-radius:50%;border:3px solid var(--panel);box-shadow:0 0 0 1px var(--line)}.color-swatch.selected{box-shadow:0 0 0 2px var(--green)}.status-card{margin:12px;border-radius:14px;min-height:150px;padding:20px;color:#fff;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;background:#607d8b}.status-card-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.status-shade{position:absolute;inset:0;background:linear-gradient(transparent,rgba(0,0,0,.65))}.status-content{position:relative;z-index:1}.status-type{font-size:13px;opacity:.85}.status-text{font-size:21px;font-weight:600;margin:8px 0;line-height:1.35}.status-owner{font-size:13px;opacity:.9}.status-expire{font-size:11px;opacity:.75;margin-top:7px}.status-like{position:absolute;right:12px;top:12px;z-index:2;border:0;border-radius:20px;background:rgba(0,0,0,.28);color:#fff;min-height:36px;padding:0 12px}
+.sheet-backdrop,.modal-backdrop,.viewer-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:50;display:flex;align-items:flex-end;justify-content:center;animation:fade .15s ease}.sheet{width:100%;max-width:560px;background:var(--panel);border-radius:12px 12px 0 0;padding-bottom:env(safe-area-inset-bottom);max-height:82dvh;overflow-y:auto}.sheet-title{text-align:center;font-size:13px;color:var(--muted);padding:15px;border-bottom:1px solid var(--line)}.sheet-action{width:100%;min-height:54px;border:0;border-bottom:1px solid var(--line);background:var(--panel);font-size:16px;text-align:center;padding:10px 16px}.sheet-action:active{background:var(--panel-2)}.sheet-action.danger{color:var(--danger)}.sheet-cancel{margin-top:8px;border-top:8px solid var(--bg);font-weight:600}.modal-backdrop{align-items:center;padding:24px}.modal{width:100%;max-width:420px;background:var(--panel);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;max-height:85dvh;overflow-y:auto}.modal-title{text-align:center;font-size:17px;font-weight:600;padding:20px 18px 8px}.modal-text{padding:8px 20px 18px;color:var(--muted);font-size:14px;line-height:1.55;text-align:center;white-space:pre-wrap}.modal-body{padding:8px 16px 16px}.modal-body input,.modal-body textarea{width:100%;border:1px solid var(--line);border-radius:6px;background:var(--panel-2);padding:11px;font-size:16px;outline:none}.modal-buttons{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;border-top:1px solid var(--line)}.modal-buttons button{min-height:50px;border:0;border-right:1px solid var(--line);background:var(--panel);color:var(--green);font-size:16px}.modal-buttons button:last-child{border-right:0}.modal-buttons .danger{color:var(--danger)}.viewer-backdrop{background:#000;align-items:center;z-index:70}.viewer-content{width:100%;height:100%;display:flex;align-items:center;justify-content:center}.viewer-content img,.viewer-content video{max-width:100%;max-height:100%;object-fit:contain}.viewer-top{position:absolute;left:0;right:0;top:0;padding:calc(8px + env(safe-area-inset-top)) 8px 8px;display:flex;justify-content:space-between;background:linear-gradient(rgba(0,0,0,.55),transparent);color:#fff}.viewer-top .icon-btn{color:#fff}
+#toast{position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);max-width:min(86vw,440px);background:rgba(20,20,20,.88);color:#fff;border-radius:8px;padding:11px 16px;font-size:14px;line-height:1.45;text-align:center;opacity:0;pointer-events:none;transition:.2s;z-index:100}#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.chip-list{display:flex;gap:7px;flex-wrap:wrap}.chip{border:1px solid var(--line);border-radius:16px;background:var(--panel-2);min-height:34px;padding:0 12px;color:var(--muted)}.chip.selected{background:rgba(7,193,96,.12);color:var(--green);border-color:var(--green)}.member-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px 8px;padding:16px}.member-item{border:0;background:transparent;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;color:var(--muted);min-width:0}.member-item span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px}.stat-card{background:var(--panel);border-radius:10px;padding:16px 8px;text-align:center}.stat-value{font-size:20px;font-weight:650}.stat-label{font-size:12px;color:var(--muted);margin-top:6px}.notice{margin:12px;padding:12px 14px;background:rgba(7,193,96,.09);border-radius:8px;color:var(--green);font-size:13px;line-height:1.55}.notice.warn{background:rgba(250,173,20,.1);color:#ad6800}.dark .notice.warn{color:#ffc53d}.code-text{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;word-break:break-all}.progress-text{font-size:13px;color:var(--muted);padding:10px 14px}.hidden{display:none!important}
+@media(min-width:561px){body{background:#dfe3e6}#app{box-shadow:0 0 30px rgba(0,0,0,.15)}.sheet{border-radius:12px;margin-bottom:18px}.sheet-backdrop{align-items:center;padding:20px}.sheet-cancel{border-radius:0 0 12px 12px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-chat" viewBox="0 0 24 24"><path d="M20 15a3 3 0 0 1-3 3H9l-5 3v-6a3 3 0 0 1-1-2V6a3 3 0 0 1 3-3h11a3 3 0 0 1 3 3z"/></symbol>
+<symbol id="i-contacts" viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 21v-2a6 6 0 0 1 12 0v2M16 4a4 4 0 0 1 0 8M18 15a5 5 0 0 1 4 5v1"/></symbol>
+<symbol id="i-discover" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></symbol>
+<symbol id="i-me" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="7"/><path d="m16 16 5 5"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-back" viewBox="0 0 24 24"><path d="m15 4-8 8 8 8"/></symbol>
+<symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1" fill="currentColor"/><circle cx="12" cy="12" r="1" fill="currentColor"/><circle cx="19" cy="12" r="1" fill="currentColor"/></symbol>
+<symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 4 8 8-8 8"/></symbol>
+<symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 6h4l2-3h4l2 3h4a2 2 0 0 1 2 2v11H2V8a2 2 0 0 1 2-2z"/><circle cx="12" cy="12" r="4"/></symbol>
+<symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8" cy="8" r="2"/><path d="m3 17 5-5 4 4 3-3 6 6"/></symbol>
+<symbol id="i-video" viewBox="0 0 24 24"><rect x="2" y="5" width="14" height="14" rx="2"/><path d="m16 10 6-3v10l-6-3z"/></symbol>
+<symbol id="i-file" viewBox="0 0 24 24"><path d="M6 2h8l4 4v16H6zM14 2v5h5M9 12h6M9 16h6"/></symbol>
+<symbol id="i-mic" viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="13" rx="4"/><path d="M4 11a8 8 0 0 0 16 0M12 19v3M8 22h8"/></symbol>
+<symbol id="i-keyboard" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M6 13h.01M10 13h.01M14 13h.01M18 13h.01M7 16h10"/></symbol>
+<symbol id="i-smile" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 14a5 5 0 0 0 8 0M8 9h.01M16 9h.01"/></symbol>
+<symbol id="i-star" viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9z"/></symbol>
+<symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 13.5v-3l-2-.7a7 7 0 0 0-.7-1.6l.9-1.9-2.1-2.1-1.9.9a7 7 0 0 0-1.7-.7L10.5 2h-3l-.7 2a7 7 0 0 0-1.6.7l-1.9-.9-2.1 2.1.9 1.9a7 7 0 0 0-.7 1.7l-2 .7v3l2 .7a7 7 0 0 0 .7 1.7l-.9 1.9 2.1 2.1 1.9-.9a7 7 0 0 0 1.6.7l.7 2h3l.7-2a7 7 0 0 0 1.7-.7l1.9.9 2.1-2.1-.9-1.9a7 7 0 0 0 .7-1.6z" transform="translate(2.5 0) scale(.8)"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></symbol>
+<symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></symbol>
+<symbol id="i-close" viewBox="0 0 24 24"><path d="m5 5 14 14M19 5 5 19"/></symbol>
+<symbol id="i-play" viewBox="0 0 24 24"><path d="m8 4 12 8-12 8z" fill="currentColor"/></symbol>
+<symbol id="i-comment" viewBox="0 0 24 24"><path d="M20 15a3 3 0 0 1-3 3H9l-5 3v-6a3 3 0 0 1-1-2V6a3 3 0 0 1 3-3h11a3 3 0 0 1 3 3z"/></symbol>
+<symbol id="i-heart" viewBox="0 0 24 24"><path d="M20 5a5 5 0 0 0-8 2 5 5 0 0 0-8-2C-1 9 12 21 12 21S25 9 20 5z"/></symbol>
+<symbol id="i-share" viewBox="0 0 24 24"><path d="m14 4 7 7-7 7v-4C6 14 4 18 3 20c0-9 4-12 11-12z"/></symbol>
+<symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 5h7l2 3h9v12H3z"/></symbol>
+<symbol id="i-ai" viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="14" rx="3"/><path d="M12 2v4M8 11h.01M16 11h.01M8 15h8M2 11v4M22 11v4"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="m4 12 5 5L20 6"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7M14 10v7"/></symbol>
+<symbol id="i-edit" viewBox="0 0 24 24"><path d="m14 4 6 6L9 21H3v-6zM12 6l6 6"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7h.01"/></symbol>
+</defs></svg>
+<div id="app"><div class="boot"><div class="boot-mark">微</div><strong>微聊单机版</strong><span>正在读取本机数据…</span></div></div>
+<div id="overlay-root"></div><div id="toast" role="status" aria-live="polite"></div>
+<script>
+'use strict';
+/* ===== 平台桥接与基础工具 ===== */
+const appEl = document.getElementById('app');
+const overlayRoot = document.getElementById('overlay-root');
+const toastEl = document.getElementById('toast');
+const hasAndroid = typeof window.AndroidBridge !== 'undefined';
+const hasIOS = !!(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.localBridge);
+const aiWaiters = new Map();
+const secretWaiters = new Map();
+let toastTimer = 0;
+let currentAudio = null;
+let confirmCallback = null;
+let promptCallback = null;
+
+function uid(prefix = 'id') { return prefix + '_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8); }
+function deepClone(value) { return JSON.parse(JSON.stringify(value)); }
+function esc(value) { return String(value == null ? '' : value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char])); }
+function icon(name, extra = '') { return `<svg class="icon ${extra}" aria-hidden="true"><use href="#i-${name}" xlink:href="#i-${name}"></use></svg>`; }
+function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
+function randomItem(items) { return items[Math.floor(Math.random() * items.length)]; }
+function wait(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+function toast(message, duration = 2400) {
+    clearTimeout(toastTimer);
+    toastEl.textContent = String(message || '');
+    toastEl.classList.add('show');
+    toastTimer = setTimeout(() => toastEl.classList.remove('show'), duration);
+}
+function fmtSize(bytes) {
+    const size = Number(bytes) || 0;
+    if (size < 1024) return size + ' B';
+    if (size < 1048576) return (size / 1024).toFixed(size > 10240 ? 0 : 1) + ' KB';
+    if (size < 1073741824) return (size / 1048576).toFixed(size > 10485760 ? 0 : 1) + ' MB';
+    return (size / 1073741824).toFixed(1) + ' GB';
+}
+function pad(number) { return String(number).padStart(2, '0'); }
+function fmtTime(timestamp) {
+    if (!timestamp) return '';
+    const date = new Date(timestamp), now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const target = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+    const days = Math.round((start - target) / 86400000);
+    if (days === 0) return pad(date.getHours()) + ':' + pad(date.getMinutes());
+    if (days === 1) return '昨天';
+    if (days > 1 && days < 7) return ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'][date.getDay()];
+    if (date.getFullYear() === now.getFullYear()) return (date.getMonth() + 1) + '月' + date.getDate() + '日';
+    return date.getFullYear() + '/' + (date.getMonth() + 1) + '/' + date.getDate();
+}
+function fmtFullTime(timestamp) {
+    const date = new Date(timestamp);
+    return date.getFullYear() + '年' + (date.getMonth() + 1) + '月' + date.getDate() + '日 ' + pad(date.getHours()) + ':' + pad(date.getMinutes());
+}
+function closeOverlay() {
+    overlayRoot.innerHTML = '';
+    confirmCallback = null;
+    promptCallback = null;
+}
+function showSheet(title, items) {
+    overlayRoot.innerHTML = `<div class="sheet-backdrop" data-action="overlay-back"><div class="sheet" data-action="sheet-stop">${title ? `<div class="sheet-title">${esc(title)}</div>` : ''}${items.map(item => `<button class="sheet-action ${item.danger ? 'danger' : ''}" data-action="${esc(item.action)}" ${item.data || ''} ${item.disabled ? 'disabled' : ''}>${esc(item.label)}</button>`).join('')}<button class="sheet-action sheet-cancel" data-action="close-overlay">取消</button></div></div>`;
+}
+function showConfirm(title, text, onConfirm, danger = false, confirmText = '确定') {
+    confirmCallback = onConfirm;
+    overlayRoot.innerHTML = `<div class="modal-backdrop"><div class="modal"><div class="modal-title">${esc(title)}</div><div class="modal-text">${esc(text)}</div><div class="modal-buttons"><button data-action="close-overlay">取消</button><button class="${danger ? 'danger' : ''}" data-action="confirm-overlay">${esc(confirmText)}</button></div></div></div>`;
+}
+function showPrompt(title, value, placeholder, onDone, multiline = false) {
+    promptCallback = onDone;
+    overlayRoot.innerHTML = `<div class="modal-backdrop"><form class="modal" data-form="prompt"><div class="modal-title">${esc(title)}</div><div class="modal-body">${multiline ? `<textarea name="value" rows="4" placeholder="${esc(placeholder)}">${esc(value || '')}</textarea>` : `<input name="value" value="${esc(value || '')}" placeholder="${esc(placeholder)}" autocomplete="off">`}</div><div class="modal-buttons"><button type="button" data-action="close-overlay">取消</button><button type="submit">完成</button></div></form></div>`;
+    const field = overlayRoot.querySelector('input,textarea');
+    if (field) { field.focus(); field.setSelectionRange(field.value.length, field.value.length); }
+}
+function mediaById(id) { return id && state.media ? state.media[id] : null; }
+function openViewer(mediaId) {
+    const media = mediaById(mediaId);
+    if (!media) return toast('文件已不存在');
+    const content = media.type.startsWith('video/') ? `<video src="${media.data}" controls autoplay playsinline></video>` : media.type.startsWith('image/') ? `<img src="${media.data}" alt="${esc(media.name)}">` : `<div style="color:white;padding:30px;text-align:center">${icon('file','large')}<p>${esc(media.name)}</p><p>${fmtSize(media.size)}</p></div>`;
+    overlayRoot.innerHTML = `<div class="viewer-backdrop"><div class="viewer-content">${content}</div><div class="viewer-top"><button class="icon-btn" data-action="close-overlay" aria-label="关闭">${icon('close')}</button><button class="icon-btn" data-action="export-media" data-id="${esc(mediaId)}" aria-label="导出">${icon('download')}</button></div></div>`;
+}
+function exportMedia(mediaId) {
+    const media = mediaById(mediaId);
+    if (!media) return toast('文件已不存在');
+    const base64 = String(media.data).split(',').pop();
+    if (!base64) return toast('文件内容为空');
+    if (hasAndroid) {
+        const requestId = uid('export');
+        window.AndroidBridge.exportFile(requestId, media.name, media.type, base64);
+        toast('正在导出到系统下载目录…');
+    } else if (hasIOS) {
+        const requestId = uid('export');
+        window.webkit.messageHandlers.localBridge.postMessage({action:'exportFile',requestId,fileName:media.name,mimeType:media.type,base64Data:base64});
+        toast('正在导出文件…');
+    } else {
+        const anchor = document.createElement('a');
+        anchor.href = media.data;
+        anchor.download = media.name;
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        toast('已开始下载');
+    }
+}
+window.__exportResult = function(requestId, success, message) { toast(message || (success ? '导出完成' : '导出失败'), success ? 2400 : 4200); };
+window.__secureStoreError = function(message) { toast('密钥保存失败：' + message, 4000); };
+window.__nativeSecretResult = function(requestId, value, error) {
+    const waiter = secretWaiters.get(requestId);
+    if (!waiter) return;
+    secretWaiters.delete(requestId);
+    if (error) waiter.reject(new Error(error)); else waiter.resolve(value || '');
+};
+window.__aiResponse = function(requestId, code, body) {
+    const waiter = aiWaiters.get(requestId);
+    if (!waiter) return;
+    aiWaiters.delete(requestId);
+    waiter.resolve({code:Number(code), body:String(body || '')});
+};
+
+const Native = {
+    platform: hasAndroid ? 'android' : hasIOS ? 'ios' : 'web',
+    version() { return hasAndroid ? window.AndroidBridge.appVersion() : '1.0.0'; },
+    async getApiKey() {
+        if (hasAndroid) return window.AndroidBridge.getApiKey() || '';
+        if (hasIOS) return new Promise((resolve, reject) => {
+            const requestId = uid('secret');
+            secretWaiters.set(requestId, {resolve, reject});
+            window.webkit.messageHandlers.localBridge.postMessage({action:'getApiKey',requestId});
+        });
+        return sessionStorage.getItem('local_wechat_ai_key') || '';
+    },
+    async saveApiKey(value) {
+        if (hasAndroid) return window.AndroidBridge.saveApiKey(value);
+        if (hasIOS) return window.webkit.messageHandlers.localBridge.postMessage({action:'saveApiKey',apiKey:value});
+        sessionStorage.setItem('local_wechat_ai_key', value);
+    },
+    async clearApiKey() {
+        if (hasAndroid) return window.AndroidBridge.clearApiKey();
+        if (hasIOS) return window.webkit.messageHandlers.localBridge.postMessage({action:'clearApiKey'});
+        sessionStorage.removeItem('local_wechat_ai_key');
+    },
+    aiRequest(endpoint, apiKey, body) {
+        return new Promise((resolve, reject) => {
+            const requestId = uid('ai_request');
+            aiWaiters.set(requestId, {resolve, reject});
+            if (hasAndroid) {
+                window.AndroidBridge.startAiRequest(requestId, endpoint, apiKey, JSON.stringify(body));
+            } else if (hasIOS) {
+                window.webkit.messageHandlers.localBridge.postMessage({action:'startAiRequest',requestId,endpoint,apiKey,body:JSON.stringify(body)});
+            } else {
+                aiWaiters.delete(requestId);
+                reject(new Error('浏览器预览不发起 AI 网络请求，请在安卓或 iOS 应用中使用'));
+            }
+        });
+    }
+};
+function createDefaultState() {
+    const now = Date.now();
+    return {
+        app: 'LocalWeChat', version: 1, createdAt: now, updatedAt: now,
+        profile: {id:'me',name:'本机用户',wxid:'local_user',signature:'把生活记录在这里',region:'本机',avatarMediaId:'',momentCoverMediaId:'',color:'#07c160'},
+        customTags: [],
+        contacts: [
+            {id:'ai',kind:'ai',name:'AI 小满',wxid:'deepseek_local',signature:'你的本地 AI 朋友',color:'#637bc6',letter:'A',star:true,blocked:false,tags:['AI'],avatarMediaId:''},
+            {id:'assistant',kind:'assistant',name:'文件传输助手',wxid:'filehelper',signature:'只保存在这台设备',color:'#07c160',letter:'W',star:false,blocked:false,tags:[],avatarMediaId:''},
+            {id:'lin',kind:'person',name:'林晓',wxid:'linxiao_local',signature:'慢慢来，比较快',color:'#5d8aa8',letter:'L',star:false,blocked:false,tags:['朋友'],avatarMediaId:''},
+            {id:'chen',kind:'person',name:'陈宇',wxid:'chenyu_local',signature:'周末去打球',color:'#bf8b56',letter:'C',star:false,blocked:false,tags:['朋友','球友'],avatarMediaId:''},
+            {id:'zhou',kind:'person',name:'周宁',wxid:'zhouning_local',signature:'今天也在认真生活',color:'#9b7fb8',letter:'Z',star:false,blocked:false,tags:['同事'],avatarMediaId:''}
+        ],
+        chats: [
+            {id:'chat_assistant',type:'single',contactId:'assistant',name:'文件传输助手',participants:['me','assistant'],pinned:true,muted:false,unread:0,draft:'',updatedAt:now-300000},
+            {id:'chat_ai',type:'single',contactId:'ai',name:'AI 小满',participants:['me','ai'],pinned:false,muted:false,unread:0,draft:'',updatedAt:now-600000},
+            {id:'chat_lin',type:'single',contactId:'lin',name:'林晓',participants:['me','lin'],pinned:false,muted:false,unread:1,draft:'',updatedAt:now-900000},
+            {id:'group_weekend',type:'group',contactId:'',name:'周末羽毛球',participants:['me','lin','chen','zhou'],pinned:false,muted:false,unread:2,draft:'',updatedAt:now-1200000}
+        ],
+        messages: [
+            {id:'m_welcome_ai',chatId:'chat_ai',sender:'ai',type:'text',text:'我是小满。完成 AI 设置后，我会按你设定的人设聊天，也可以给你的朋友圈点赞和评论。',time:now-600000},
+            {id:'m_helper',chatId:'chat_assistant',sender:'me',type:'text',text:'这里可以保存文字、图片、视频和文件，内容仅保存在本机。',time:now-300000},
+            {id:'m_lin_1',chatId:'chat_lin',sender:'lin',type:'text',text:'这周末有空吗？想一起去走走。',time:now-1000000},
+            {id:'m_lin_2',chatId:'chat_lin',sender:'lin',type:'text',text:'看到消息回我一下。',time:now-900000},
+            {id:'m_group_1',chatId:'group_weekend',sender:'chen',type:'text',text:'老地方，周六下午三点？',time:now-1300000},
+            {id:'m_group_2',chatId:'group_weekend',sender:'zhou',type:'text',text:'我可以，球拍我自己带。',time:now-1200000}
+        ],
+        moments: [
+            {id:'moment_lin',author:'lin',text:'最近开始重新整理生活，把不重要的事情慢慢放下。',mediaIds:[],location:'',time:now-5400000,likes:['chen'],comments:[{id:'c_moment_1',author:'chen',text:'这个状态很好。'}],visibility:'public',visibleTo:[],hiddenFrom:[],aiInteracted:false},
+            {id:'moment_chen',author:'chen',text:'周六羽毛球继续，想来的人直接报名。',mediaIds:[],location:'本机 · 运动馆',time:now-86400000,likes:['lin','zhou'],comments:[],visibility:'public',visibleTo:[],hiddenFrom:[],aiInteracted:false}
+        ],
+        statuses: [
+            {id:'status_lin',owner:'lin',type:'运动',text:'今天也要动起来',color:'#5d8aa8',mediaId:'',createdAt:now-3600000,expiresAt:now+82800000,visibility:'public',likes:[]},
+            {id:'status_zhou',owner:'zhou',type:'忙',text:'专注工作中，晚点回复',color:'#6e6e6e',mediaId:'',createdAt:now-7200000,expiresAt:now+79200000,visibility:'public',likes:['lin']}
+        ],
+        favorites: [{id:'fav_welcome',type:'note',text:'长按聊天消息可以收藏、转发或撤回。',mediaIds:[],source:'使用提示',createdAt:now-86400000}],
+        media: {},
+        settings: {
+            theme:'light',fontScale:1,autoReply:true,enterSend:false,notifications:true,chatBackground:'#f3f3f3',
+            ai:{enabled:false,endpoint:'https://api.deepseek.com/chat/completions',model:'deepseek-chat',mediaEndpoint:'',mediaModel:'',temperature:0.7,maxTokens:2048,contextCount:20,systemPrompt:'你是一个自然、真诚的中文聊天伙伴。',personaName:'小满',personality:'温柔、真诚、细腻，有一点幽默',speakingStyle:'自然口语，句子不过度工整，偶尔使用语气词，但不刻意卖萌',relationship:'熟悉的朋友',customPrompt:'',replySpeed:'natural',proactivity:35,autoLike:true,autoComment:true,proactiveChat:false,localFallback:true,quietStart:'23:00',quietEnd:'07:00'}
+        }
+    };
+}
+
+let state = null;
+let database = null;
+let storageFallback = false;
+let saveQueue = Promise.resolve();
+const ui = {
+    view:'main',tab:'chats',params:{},stack:[],searchTerm:'',searchSubmitted:false,
+    momentDraft:null,statusDraft:null,aiTypingChats:new Set(),aiTesting:false,
+    composerPanel:'',voiceMode:false,highlightMessageId:'',mediaFilter:'all',
+    contactMomentId:'',favoriteFilter:'',aiTestMessage:'',aiInteractionTimer:0
+};
+
+function openDatabase() {
+    return new Promise((resolve, reject) => {
+        if (!window.indexedDB) return reject(new Error('IndexedDB unavailable'));
+        const request = indexedDB.open('local-wechat-android', 1);
+        request.onupgradeneeded = () => {
+            const db = request.result;
+            if (!db.objectStoreNames.contains('kv')) db.createObjectStore('kv');
+        };
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error || new Error('Database open failed'));
+    });
+}
+function dbGet(key) {
+    return new Promise((resolve, reject) => {
+        const request = database.transaction('kv','readonly').objectStore('kv').get(key);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
+}
+function dbPut(key, value) {
+    return new Promise((resolve, reject) => {
+        const request = database.transaction('kv','readwrite').objectStore('kv').put(value,key);
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+    });
+}
+function persist() {
+    if (!state) return saveQueue;
+    state.updatedAt = Date.now();
+    const snapshot = deepClone(state);
+    saveQueue = saveQueue.then(async () => {
+        if (storageFallback) localStorage.setItem('local_wechat_state',JSON.stringify(snapshot));
+        else await dbPut('state',snapshot);
+    }).catch(error => {
+        console.error(error);
+        toast('保存失败，可能是本机存储空间不足',4000);
+    });
+    return saveQueue;
+}
+function migrateState(loaded) {
+    const base = createDefaultState();
+    if (!loaded || typeof loaded !== 'object') return base;
+    const merged = Object.assign(base, loaded);
+    merged.profile = Object.assign(base.profile, loaded.profile || {});
+    merged.settings = Object.assign(base.settings, loaded.settings || {});
+    merged.settings.ai = Object.assign(base.settings.ai, (loaded.settings && loaded.settings.ai) || {});
+    for (const key of ['contacts','chats','messages','moments','statuses','favorites','customTags']) {
+        if (!Array.isArray(merged[key])) merged[key] = base[key];
+    }
+    if (!merged.media || typeof merged.media !== 'object' || Array.isArray(merged.media)) merged.media = {};
+    const defaultAI = base.contacts.find(contact => contact.id === 'ai');
+    if (!merged.contacts.some(contact => contact.id === 'ai')) merged.contacts.unshift(defaultAI);
+    if (!merged.chats.some(chat => chat.id === 'chat_ai')) merged.chats.unshift(base.chats.find(chat => chat.id === 'chat_ai'));
+    return merged;
+}
+function commit(shouldRender = true) {
+    persist();
+    if (shouldRender) render();
+}
+function contactById(id) {
+    if (id === 'me') return state.profile;
+    return state.contacts.find(contact => contact.id === id) || {id,name:'已删除联系人',color:'#999',kind:'person',tags:[]};
+}
+function displayName(id) {
+    const contact = contactById(id);
+    return contact.remark || contact.name || '未命名';
+}
+function avatarHTML(id, size = '') {
+    const person = contactById(id);
+    const media = mediaById(person.avatarMediaId);
+    const kindClass = person.kind === 'ai' ? 'ai' : '';
+    const initial = person.kind === 'ai' ? 'AI' : person.kind === 'assistant' ? '文' : esc((person.name || '微').trim().slice(0,1));
+    const color = person.color || '#8a8a8a';
+    return `<div class="avatar ${size} ${kindClass}" style="background:${esc(color)}">${media ? `<img src="${esc(media.data)}" alt="">` : initial}</div>`;
+}
+function chatById(id) { return state.chats.find(chat => chat.id === id); }
+function chatName(chat) { return chat ? (chat.type === 'group' ? chat.name : displayName(chat.contactId)) : ''; }
+function messagesForChat(chatId) { return state.messages.filter(message => message.chatId === chatId).sort((a,b) => a.time - b.time); }
+function lastMessage(chatId) {
+    const messages = messagesForChat(chatId);
+    return messages.length ? messages[messages.length - 1] : null;
+}
+function messagePreview(message) {
+    if (!message) return '开始聊天';
+    if (message.recalled) return '一条消息已撤回';
+    const prefix = message.sender !== 'me' && chatById(message.chatId) && chatById(message.chatId).type === 'group' ? displayName(message.sender) + '：' : '';
+    const text = message.type === 'text' ? message.text : message.type === 'image' ? '[图片]' : message.type === 'video' ? '[视频]' : message.type === 'audio' ? '[语音]' : message.type === 'file' ? '[文件] ' + (message.fileName || '') : '[消息]';
+    return prefix + text;
+}
+function totalUnread() { return state.chats.reduce((sum,chat) => sum + (chat.muted ? 0 : Number(chat.unread || 0)),0); }
+function currentStatus(ownerId) {
+    return state.statuses.filter(status => status.owner === ownerId && status.expiresAt > Date.now() && (ownerId === 'me' || status.visibility === 'public')).sort((a,b) => b.createdAt - a.createdAt)[0] || null;
+}
+function activeChat() { return ui.view === 'chat' ? chatById(ui.params.id) : null; }
+function addMessage(chatId, data) {
+    const chat = chatById(chatId);
+    if (!chat) return null;
+    const message = Object.assign({id:uid('msg'),chatId,sender:'me',type:'text',time:Date.now()},data || {});
+    state.messages.push(message);
+    chat.updatedAt = message.time;
+    if (message.sender === 'me' || (ui.view === 'chat' && ui.params.id === chatId)) chat.unread = 0;
+    else chat.unread = Number(chat.unread || 0) + 1;
+    return message;
+}
+function readAsDataURL(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error || new Error('文件读取失败'));
+        reader.readAsDataURL(file);
+    });
+}
+async function imageDataURL(file, original) {
+    if (file.type === 'image/gif' || file.size < 900000) return {data:original,type:file.type || 'image/jpeg'};
+    const image = await new Promise((resolve, reject) => {
+        const element = new Image();
+        element.onload = () => resolve(element);
+        element.onerror = () => reject(new Error('图片解码失败'));
+        element.src = original;
+    });
+    const ratio = Math.min(1,1600 / Math.max(image.naturalWidth,image.naturalHeight));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1,Math.round(image.naturalWidth * ratio));
+    canvas.height = Math.max(1,Math.round(image.naturalHeight * ratio));
+    const context = canvas.getContext('2d');
+    context.drawImage(image,0,0,canvas.width,canvas.height);
+    const type = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+    return {data:canvas.toDataURL(type,0.86),type};
+}
+async function importMediaFile(file) {
+    if (!file) throw new Error('未选择文件');
+    let type = file.type || 'application/octet-stream';
+    const isImage = type.startsWith('image/'), isVideo = type.startsWith('video/'), isAudio = type.startsWith('audio/');
+    const limit = isVideo ? 209715200 : isImage ? 26214400 : isAudio ? 26214400 : 104857600;
+    if (file.size > limit) throw new Error(`${file.name} 超过大小限制（${fmtSize(limit)}）`);
+    let data = await readAsDataURL(file);
+    if (isImage) {
+        try { const processed = await imageDataURL(file,data); data = processed.data; type = processed.type; }
+        catch (error) { console.warn('Using original image',error); }
+    }
+    const id = uid('media');
+    const media = {id,name:file.name || ('本地文件_' + Date.now()),type,size:file.size,data,createdAt:Date.now()};
+    state.media[id] = media;
+    return id;
+}
+function chooseFiles(options, onDone) {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = options.accept || '*/*';
+    input.multiple = !!options.multiple;
+    if (options.capture) input.capture = options.capture;
+    input.style.display = 'none';
+    document.body.appendChild(input);
+    input.addEventListener('change', async () => {
+        const files = Array.from(input.files || []);
+        input.remove();
+        if (!files.length) return;
+        toast(options.processingText || '正在读取本地文件…',1200);
+        try {
+            const ids = [];
+            for (const file of files) ids.push(await importMediaFile(file));
+            await persist();
+            if (onDone) onDone(ids,files);
+        } catch (error) {
+            toast(error.message || '文件导入失败',4000);
+        }
+    },{once:true});
+    input.click();
+}
+function mimeLabel(media) {
+    if (!media) return '文件';
+    if (media.type.startsWith('image/')) return '图片';
+    if (media.type.startsWith('video/')) return '视频';
+    if (media.type.startsWith('audio/')) return '音频';
+    return '文件';
+}
+function validateBackup(candidate) {
+    if (!candidate || candidate.app !== 'LocalWeChat' || !Array.isArray(candidate.contacts) || !Array.isArray(candidate.messages)) {
+        throw new Error('这不是有效的微聊备份文件');
+    }
+    if (candidate.media) {
+        for (const media of Object.values(candidate.media)) {
+            if (!media || typeof media.data !== 'string' || !media.data.startsWith('data:')) throw new Error('备份中包含不安全的媒体地址');
+        }
+    }
+    return migrateState(candidate);
+}
+function applyAppearance() {
+    document.body.classList.toggle('dark',state.settings.theme === 'dark');
+    document.documentElement.style.setProperty('--font-scale',String(state.settings.fontScale || 1));
+    document.documentElement.style.setProperty('--chat-bg',state.settings.chatBackground || '#f3f3f3');
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.content = state.settings.theme === 'dark' ? '#111111' : '#f7f7f7';
+}
+function topbar(title, options = {}) {
+    const left = options.back ? `<button class="icon-btn" data-action="back" aria-label="返回">${icon('back')}</button>` : (options.left || '<span style="width:46px"></span>');
+    return `<header class="topbar">${left}<h1 class="${options.titleLeft ? 'topbar-title' : ''}">${esc(title)}${options.subtitle ? `<span class="topbar-sub">${esc(options.subtitle)}</span>` : ''}</h1><div class="top-actions">${options.actions || ''}</div></header>`;
+}
+function actionIcon(action, name, data = '', label = '') {
+    return `<button class="icon-btn" data-action="${action}" ${data} aria-label="${esc(label || action)}">${icon(name)}</button>`;
+}
+function bottomNav() {
+    const items = [{id:'chats',name:'微信',icon:'chat'},{id:'contacts',name:'通讯录',icon:'contacts'},{id:'discover',name:'发现',icon:'discover'},{id:'me',name:'我',icon:'me'}];
+    const unread = totalUnread();
+    return `<nav class="bottom-nav">${items.map(item => `<button class="nav-item ${ui.tab === item.id ? 'active' : ''}" data-action="tab" data-id="${item.id}">${icon(item.icon)}<span>${item.name}</span>${item.id === 'chats' && unread ? `<b class="badge">${unread > 99 ? '99+' : unread}</b>` : ''}</button>`).join('')}</nav>`;
+}
+function emptyHTML(title, text, iconName = 'chat', action = '') {
+    return `<div class="empty">${icon(iconName)}<div class="empty-title">${esc(title)}</div><div>${esc(text)}</div>${action ? `<div class="empty-actions">${action}</div>` : ''}</div>`;
+}
+function chevron() { return icon('chevron','chevron'); }
+function switchHTML(action, on, data = '', label = '') {
+    return `<button class="switch ${on ? 'on' : ''}" data-action="${action}" ${data} role="switch" aria-checked="${!!on}" aria-label="${esc(label)}"></button>`;
+}
+function mediaGridHTML(ids, single = false) {
+    const media = (ids || []).map(mediaById).filter(Boolean);
+    if (!media.length) return '';
+    return `<div class="media-grid count-${media.length}">${media.map(item => `<button class="media-cell ${media.length === 1 ? 'single' : ''}" data-action="view-media" data-id="${item.id}">${item.type.startsWith('video/') ? `<video src="${esc(item.data)}" preload="metadata" muted playsinline></video><span class="video-mark">${icon('play','small')}</span>` : `<img src="${esc(item.data)}" alt="${esc(item.name)}" loading="lazy">`}</button>`).join('')}</div>`;
+}
+function render() {
+    if (!state) return;
+    applyAppearance();
+    const routes = {
+        main:renderMain,chat:renderChat,globalSearch:renderGlobalSearch,newContact:renderNewContact,
+        groups:renderGroups,newGroup:renderNewGroup,tags:renderTags,contactDetail:renderContactDetail,
+        contactEdit:renderContactEdit,contactMoments:renderContactMoments,moments:renderMoments,
+        momentPublish:renderMomentPublish,friendsStatus:renderFriendsStatus,statusEdit:renderStatusEdit,
+        statusHistory:renderStatusHistory,favorites:renderFavorites,favoriteEdit:renderFavoriteEdit,
+        files:renderFiles,settings:renderSettings,aiSettings:renderAISettings,profile:renderProfile,
+        backup:renderBackup,about:renderAbout,chatInfo:renderChatInfo
+    };
+    const route = routes[ui.view] || renderMain;
+    appEl.innerHTML = route();
+    if (ui.view === 'chat') requestAnimationFrame(() => { const content = document.getElementById('chat-messages'); if (content) content.scrollTop = content.scrollHeight; });
+}
+function renderMain() {
+    let content = '', header = '';
+    if (ui.tab === 'chats') {
+        header = topbar('微信',{titleLeft:true,actions:actionIcon('nav','search','data-view="globalSearch"','搜索') + actionIcon('show-main-plus','plus','','更多')});
+        content = renderChatsTab();
+    } else if (ui.tab === 'contacts') {
+        header = topbar('通讯录',{actions:actionIcon('nav','plus','data-view="newContact"','添加朋友')});
+        content = renderContactsTab();
+    } else if (ui.tab === 'discover') {
+        header = topbar('发现');
+        content = renderDiscoverTab();
+    } else {
+        content = renderMeTab();
+    }
+    return `<div class="view">${header}<main class="content with-nav">${content}</main>${bottomNav()}</div>`;
+}
+function sortedChats() {
+    return [...state.chats].sort((a,b) => (Number(b.pinned) - Number(a.pinned)) || ((lastMessage(b.id)?.time || b.updatedAt || 0) - (lastMessage(a.id)?.time || a.updatedAt || 0)));
+}
+function renderChatsTab() {
+    const search = `<div class="search-wrap"><button class="search-box" data-action="nav" data-view="globalSearch">${icon('search')}<span>搜索</span></button></div>`;
+    if (!state.chats.length) return search + emptyHTML('暂无会话','点击右上角加号，发起群聊或添加朋友','chat');
+    return search + `<div class="list">${sortedChats().map(chat => {
+        const last = lastMessage(chat.id);
+        const person = chat.type === 'group' ? {name:chat.name,color:'#8a8a8a'} : contactById(chat.contactId);
+        const avatar = chat.type === 'group' ? `<div class="avatar" style="background:#9a9a9a">${icon('contacts')}</div>` : avatarHTML(chat.contactId);
+        return `<button class="row conversation-row" data-action="open-chat" data-id="${chat.id}" data-longpress="chat" style="${chat.pinned ? 'background:var(--panel-2)' : ''}">${avatar}<div class="row-main"><div class="row-title">${esc(chatName(chat))}${contactById(chat.contactId).kind === 'ai' ? '<span class="tag ai-tag">AI</span>' : ''}${chat.muted ? '<span class="tag">静音</span>' : ''}</div><div class="row-sub">${esc(messagePreview(last))}</div></div><div class="row-meta"><span>${fmtTime(last?.time || chat.updatedAt)}</span>${chat.unread ? `<b class="badge">${chat.unread > 99 ? '99+' : chat.unread}</b>` : chat.pinned ? '<span class="pin-mark">置顶</span>' : '<span></span>'}</div></button>`;
+    }).join('')}</div>`;
+}
+function renderContactsTab() {
+    const specials = [
+        {view:'newContact',name:'新的朋友',icon:'plus',color:'#fa9d3b'},
+        {view:'groups',name:'群聊',icon:'contacts',color:'#07c160'},
+        {view:'tags',name:'标签',icon:'file',color:'#576b95'}
+    ];
+    const contacts = [...state.contacts].filter(contact => contact.kind !== 'assistant').sort((a,b) => Number(b.star) - Number(a.star) || String(a.letter || '#').localeCompare(String(b.letter || '#')) || a.name.localeCompare(b.name,'zh-CN'));
+    let lastLetter = '';
+    const list = contacts.map(contact => {
+        const letter = contact.star ? '星标朋友' : (contact.letter || '#').toUpperCase();
+        const section = letter !== lastLetter ? `<div class="section-label">${esc(letter)}</div>` : '';
+        lastLetter = letter;
+        const status = currentStatus(contact.id);
+        return section + `<button class="row" data-action="open-contact" data-id="${contact.id}">${avatarHTML(contact.id)}<div class="row-main"><div class="row-title">${esc(displayName(contact.id))}${contact.kind === 'ai' ? '<span class="tag ai-tag">AI</span>' : ''}${contact.blocked ? '<span class="tag">黑名单</span>' : ''}</div>${status ? `<div class="row-sub">${esc(status.type)} · ${esc(status.text)}</div>` : ''}</div></button>`;
+    }).join('');
+    return `<div class="search-wrap"><button class="search-box" data-action="nav" data-view="globalSearch">${icon('search')}<span>搜索</span></button></div><div class="list">${specials.map(item => `<button class="row" data-action="nav" data-view="${item.view}"><div class="avatar" style="background:${item.color}">${icon(item.icon)}</div><div class="row-main"><div class="row-title">${item.name}</div></div></button>`).join('')}</div>${list}`;
+}
+function renderDiscoverTab() {
+    const row = (action,iconName,title,data = '',extra = '') => `<button class="row" data-action="${action}" ${data}><span class="row-icon">${icon(iconName)}</span><div class="row-main"><div class="row-title">${title}</div></div>${extra}${chevron()}</button>`;
+    return `<div class="list" style="margin-top:10px">${row('nav','discover','朋友圈','data-view="moments"')}</div><div class="list">${row('unavailable','video','视频号','data-feature="视频号"')}${row('unavailable','play','直播','data-feature="直播"')}</div><div class="list">${row('unavailable','search','扫一扫','data-feature="扫一扫"')}${row('unavailable','contacts','摇一摇','data-feature="摇一摇"')}</div><div class="list">${row('unavailable','star','看一看','data-feature="看一看"')}${row('nav','search','搜一搜','data-view="globalSearch"')}</div><div class="list">${row('unavailable','me','附近','data-feature="附近"')}${row('unavailable','folder','购物','data-feature="购物"')}${row('unavailable','smile','游戏','data-feature="游戏"')}</div><div class="list">${row('unavailable','chat','小程序','data-feature="小程序"')}</div>`;
+}
+function renderMeTab() {
+    const profile = state.profile, status = currentStatus('me');
+    return `<div style="padding-top:env(safe-area-inset-top);background:var(--panel)"><button class="row" style="min-height:116px;padding:22px 16px" data-action="nav" data-view="profile">${avatarHTML('me','large')}<div class="row-main"><div class="row-title" style="font-size:21px">${esc(profile.name)}</div><div class="row-sub" style="margin-top:10px">微信号：${esc(profile.wxid)}</div>${status ? `<div class="row-sub">${esc(status.type)} · ${esc(status.text)}</div>` : ''}</div>${chevron()}</button><button class="row" data-action="new-status"><span class="row-icon">${icon('plus')}</span><div class="row-main"><div class="row-title">${status ? '更新状态' : '设个状态'}</div></div>${status ? `<span class="row-sub">24 小时后结束</span>` : ''}${chevron()}</button></div><div class="list" style="margin-top:10px"><button class="row" data-action="unavailable" data-feature="服务与支付"><span class="row-icon">${icon('settings')}</span><div class="row-main"><div class="row-title">服务</div></div>${chevron()}</button></div><div class="list" style="margin-top:10px"><button class="row" data-action="nav" data-view="favorites"><span class="row-icon">${icon('star')}</span><div class="row-main"><div class="row-title">收藏</div></div>${chevron()}</button><button class="row" data-action="nav" data-view="contactMoments" data-id="me"><span class="row-icon">${icon('discover')}</span><div class="row-main"><div class="row-title">朋友圈</div></div>${chevron()}</button><button class="row" data-action="unavailable" data-feature="卡包"><span class="row-icon">${icon('file')}</span><div class="row-main"><div class="row-title">卡包</div></div>${chevron()}</button><button class="row" data-action="unavailable" data-feature="表情商店"><span class="row-icon">${icon('smile')}</span><div class="row-main"><div class="row-title">表情</div></div>${chevron()}</button></div><div class="list" style="margin-top:10px"><button class="row" data-action="nav" data-view="settings"><span class="row-icon">${icon('settings')}</span><div class="row-main"><div class="row-title">设置</div></div>${chevron()}</button></div>`;
+}
+function messageHTML(message, chat) {
+    if (message.recalled) return `<div class="system-message">${message.sender === 'me' ? '你' : esc(displayName(message.sender))}撤回了一条消息</div>`;
+    const own = message.sender === 'me';
+    const media = mediaById(message.mediaId);
+    let bubble = '';
+    if (message.type === 'text') bubble = `<div class="bubble ${message.error ? 'error' : ''}">${esc(message.text)}</div>`;
+    else if (message.type === 'image' && media) bubble = `<div class="bubble media-bubble"><img class="chat-image" src="${esc(media.data)}" data-action="view-media" data-id="${media.id}" alt="${esc(media.name)}"></div>`;
+    else if (message.type === 'video' && media) bubble = `<div class="bubble media-bubble"><video class="chat-video" src="${esc(media.data)}" controls playsinline preload="metadata"></video></div>`;
+    else if (message.type === 'audio' && media) bubble = `<div class="bubble"><button class="audio-btn" data-action="play-audio" data-id="${media.id}"><span class="audio-wave"><i></i><i></i><i></i></span><span>${Number(message.duration || 1)}″</span></button></div>`;
+    else if (message.type === 'file' && media) bubble = `<div class="bubble"><button class="file-card" data-action="export-media" data-id="${media.id}" style="border:0;background:transparent;text-align:left;padding:0">${icon('file')}<span><span class="file-name">${esc(media.name)}</span><span class="file-size" style="display:block">${fmtSize(media.size)}</span></span></button></div>`;
+    else bubble = '<div class="bubble error">消息内容不可用</div>';
+    return `<div class="message-row ${own ? 'own' : ''} ${ui.highlightMessageId === message.id ? 'highlight-message' : ''}" data-longpress="message" data-id="${message.id}" data-chat="${chat.id}" id="message-${message.id}">${avatarHTML(message.sender,'small')}<div class="message-stack">${!own && chat.type === 'group' ? `<div class="message-sender">${esc(displayName(message.sender))}</div>` : ''}${bubble}</div></div>`;
+}
+function renderChat() {
+    const chat = chatById(ui.params.id);
+    if (!chat) return `<div class="view">${topbar('会话不存在',{back:true})}${emptyHTML('会话已删除','返回会话列表继续操作','chat')}</div>`;
+    chat.unread = 0;
+    const messages = messagesForChat(chat.id);
+    let previousTime = 0;
+    const messageList = messages.map(message => {
+        const divider = message.time - previousTime > 300000 ? `<div class="time-divider">${fmtFullTime(message.time)}</div>` : '';
+        previousTime = message.time;
+        return divider + messageHTML(message,chat);
+    }).join('');
+    const contact = contactById(chat.contactId);
+    const subtitle = chat.type === 'group' ? `${chat.participants.length} 位成员` : contact.kind === 'ai' ? (state.settings.ai.enabled ? 'DeepSeek · 可自定义人设' : 'AI 尚未配置') : contact.kind === 'assistant' ? '本机专用' : '本地模拟联系人';
+    const typing = ui.aiTypingChats.has(chat.id) ? `<div class="message-row"><div>${avatarHTML('ai','small')}</div><div class="bubble"><span class="typing"><i></i><i></i><i></i></span></div></div>` : '';
+    return `<div class="view">${topbar(chatName(chat),{back:true,subtitle,actions:actionIcon('chat-info','more','','聊天信息')})}<main class="content chat-content" id="chat-messages">${messageList}${typing}${messages.length ? '' : emptyHTML('暂无消息','发送第一条消息吧','chat')}</main><div class="composer ${ui.voiceMode ? 'voice-mode' : ''}" id="composer"><div class="composer-main"><button class="icon-btn" data-action="toggle-voice" aria-label="语音">${icon(ui.voiceMode ? 'keyboard' : 'mic')}</button><textarea class="composer-input" id="message-input" rows="1" placeholder="">${esc(chat.draft || '')}</textarea><button class="voice-btn" id="voice-record">按住 说话</button><button class="icon-btn" data-action="toggle-emotion" aria-label="表情">${icon('smile')}</button><button class="icon-btn" data-action="toggle-more" aria-label="更多">${icon('plus')}</button><button class="send-btn" data-action="send-text">发送</button></div><div class="emotion-panel ${ui.composerPanel === 'emotion' ? 'open' : ''}" id="emotion-panel">${['^_^','-__-','T__T','>__<','O__O','(^_^)','(T_T)','\\(^o^)/'].map(face => `<button class="emotion-item" data-action="insert-face" data-value="${esc(face)}">${esc(face)}</button>`).join('')}</div><div class="more-panel ${ui.composerPanel === 'more' ? 'open' : ''}" id="more-panel"><button class="tool-item" data-action="pick-chat-image"><span class="tool-icon">${icon('image')}</span><span>照片</span></button><button class="tool-item" data-action="capture-chat-image"><span class="tool-icon">${icon('camera')}</span><span>拍摄</span></button><button class="tool-item" data-action="pick-chat-video"><span class="tool-icon">${icon('video')}</span><span>视频</span></button><button class="tool-item" data-action="pick-chat-file"><span class="tool-icon">${icon('file')}</span><span>文件</span></button><button class="tool-item" data-action="unavailable" data-feature="视频通话"><span class="tool-icon">${icon('video')}</span><span>视频通话</span></button><button class="tool-item" data-action="send-location"><span class="tool-icon">${icon('discover')}</span><span>位置</span></button><button class="tool-item" data-action="unavailable" data-feature="红包"><span class="tool-icon">${icon('file')}</span><span>红包</span></button><button class="tool-item" data-action="unavailable" data-feature="转账"><span class="tool-icon">${icon('file')}</span><span>转账</span></button><button class="tool-item" data-action="share-contact-card"><span class="tool-icon">${icon('me')}</span><span>名片</span></button><button class="tool-item" data-action="nav" data-view="favorites"><span class="tool-icon">${icon('star')}</span><span>收藏</span></button></div></div></div>`;
+}
+function momentHTML(moment) {
+    const liked = (moment.likes || []).includes('me');
+    const visibility = moment.visibility === 'private' ? '私密' : moment.visibility === 'include' ? '部分可见' : moment.visibility === 'exclude' ? '不给谁看' : '';
+    return `<article class="moment-item" id="moment-${moment.id}">${avatarHTML(moment.author)}<div class="moment-body"><button class="moment-author" data-action="contact-moments" data-id="${moment.author}">${esc(displayName(moment.author))}</button><div class="moment-text">${esc(moment.text)}</div>${mediaGridHTML(moment.mediaIds)}${moment.location ? `<div class="moment-location">${esc(moment.location)}</div>` : ''}<div class="moment-footer"><span>${fmtTime(moment.time)}${visibility ? ' · ' + visibility : ''}</span><button class="moment-more ${liked ? 'liked' : ''}" data-action="moment-menu" data-id="${moment.id}" aria-label="赞和评论">${icon('more','small')}</button></div>${(moment.likes?.length || moment.comments?.length) ? `<div class="social-box">${moment.likes?.length ? `<div class="social-likes">${icon('heart','small')} ${moment.likes.map(id => esc(displayName(id))).join('，')}</div>` : ''}${(moment.comments || []).map(comment => `<button class="comment" data-action="reply-moment-comment" data-id="${moment.id}" data-comment="${comment.id}"><b>${esc(displayName(comment.author))}${comment.author === 'ai' ? '（AI）' : ''}${comment.replyTo ? ` 回复 ${esc(displayName(comment.replyTo))}` : ''}：</b>${esc(comment.text)}</button>`).join('')}</div>` : ''}</div></article>`;
+}
+function visibleMoments(author = '') {
+    return [...state.moments].filter(moment => {
+        if (author && moment.author !== author) return false;
+        if (moment.author === 'me') return true;
+        if (moment.visibility === 'private') return false;
+        if (moment.visibility === 'include' && !(moment.visibleTo || []).includes('me')) return false;
+        if (moment.visibility === 'exclude' && (moment.hiddenFrom || []).includes('me')) return false;
+        return true;
+    }).sort((a,b) => b.time - a.time);
+}
+function renderMoments() {
+    const moments = visibleMoments();
+    const cover = mediaById(state.profile.momentCoverMediaId);
+    return `<div class="view moments-view">${topbar('朋友圈',{back:true,actions:actionIcon('new-moment','camera','','发布朋友圈')})}<main class="content moments-content"><div class="moment-cover">${cover ? `<img class="moment-cover-image" src="${esc(cover.data)}" alt="朋友圈封面">` : ''}<button class="cover-edit" data-action="change-moment-cover">更换封面</button><div class="moment-profile"><span>${esc(state.profile.name)}</span>${avatarHTML('me','large')}</div></div>${moments.length ? moments.map(momentHTML).join('') : emptyHTML('还没有朋友圈','点击右上角相机，发布第一条朋友圈','discover')}</main></div>`;
+}
+function renderGlobalSearch() {
+    const term = ui.searchTerm.trim().toLowerCase();
+    let results = '';
+    if (ui.searchSubmitted && term) {
+        const contacts = state.contacts.filter(contact => (displayName(contact.id) + contact.name + (contact.wxid || '') + (contact.tags || []).join(',')).toLowerCase().includes(term));
+        const messages = state.messages.filter(message => !message.recalled && message.type === 'text' && (message.text || '').toLowerCase().includes(term)).slice(-30).reverse();
+        const moments = visibleMoments().filter(moment => (moment.text || '').toLowerCase().includes(term));
+        const favorites = state.favorites.filter(item => (item.text || '').toLowerCase().includes(term));
+        results += `<div class="section-label">联系人（${contacts.length}）</div>${contacts.length ? `<div class="list">${contacts.map(contact => `<button class="row" data-action="open-contact" data-id="${contact.id}">${avatarHTML(contact.id)}<div class="row-main"><div class="row-title">${esc(displayName(contact.id))}</div><div class="row-sub">${esc(contact.wxid || '')}</div></div></button>`).join('')}</div>` : ''}`;
+        results += `<div class="section-label">聊天记录（${messages.length}）</div>${messages.length ? `<div class="list">${messages.map(message => `<button class="row" data-action="open-message" data-id="${message.id}" data-chat="${message.chatId}">${avatarHTML(message.sender)}<div class="row-main"><div class="row-title">${esc(chatName(chatById(message.chatId)))}</div><div class="row-sub">${esc(message.text)}</div></div><div class="row-meta">${fmtTime(message.time)}</div></button>`).join('')}</div>` : ''}`;
+        results += `<div class="section-label">朋友圈（${moments.length}）</div>${moments.length ? `<div class="list">${moments.map(moment => `<button class="row" data-action="open-moment" data-id="${moment.id}">${avatarHTML(moment.author)}<div class="row-main"><div class="row-title">${esc(displayName(moment.author))}</div><div class="row-sub">${esc(moment.text)}</div></div></button>`).join('')}</div>` : ''}`;
+        results += `<div class="section-label">收藏（${favorites.length}）</div>${favorites.length ? `<div class="list">${favorites.map(item => `<button class="row" data-action="open-favorite" data-id="${item.id}"><span class="row-icon">${icon('star')}</span><div class="row-main"><div class="row-title">${esc(item.source || '收藏')}</div><div class="row-sub">${esc(item.text)}</div></div></button>`).join('')}</div>` : ''}`;
+        if (!contacts.length && !messages.length && !moments.length && !favorites.length) results = emptyHTML('未找到相关内容','换个关键词试试','search');
+    } else {
+        results = emptyHTML('搜索本机内容','可查找联系人、聊天记录、朋友圈和收藏','search');
+    }
+    return `<div class="view">${topbar('搜索',{back:true})}<div class="search-wrap"><form class="search-form" data-form="global-search"><input id="global-search-input" name="term" value="${esc(ui.searchTerm)}" placeholder="搜索" autocomplete="off"><button type="submit">搜索</button></form></div><main class="content">${results}</main></div>`;
+}
+function renderNewContact() {
+    return `<div class="view">${topbar('添加朋友',{back:true})}<main class="content padded"><div class="notice">这是本机联系人，不会向网络发送添加请求。保存后会自动创建会话。</div><form data-form="new-contact"><div class="form-card"><div class="field"><label>名字 *</label><input name="name" required maxlength="24" placeholder="联系人名字"></div><div class="field"><label>本机微信号</label><input name="wxid" maxlength="32" placeholder="例如 friend_local"></div><div class="field"><label>备注</label><input name="remark" maxlength="24" placeholder="选填"></div><div class="field"><label>标签</label><input name="tags" placeholder="多个标签用逗号分隔"></div></div><button class="primary-btn block-btn" type="submit">保存并发起聊天</button></form></main></div>`;
+}
+function renderGroups() {
+    const groups = state.chats.filter(chat => chat.type === 'group');
+    return `<div class="view">${topbar('群聊',{back:true,actions:actionIcon('nav','plus','data-view="newGroup"','发起群聊')})}<main class="content">${groups.length ? `<div class="list">${groups.map(chat => `<button class="row" data-action="open-chat" data-id="${chat.id}"><div class="avatar" style="background:#9a9a9a">${icon('contacts')}</div><div class="row-main"><div class="row-title">${esc(chat.name)}</div><div class="row-sub">${chat.participants.length} 位成员</div></div></button>`).join('')}</div>` : emptyHTML('暂无群聊','点击右上角加号发起群聊','contacts')}</main></div>`;
+}
+function renderNewGroup() {
+    const contacts = state.contacts.filter(contact => contact.kind !== 'assistant');
+    return `<div class="view">${topbar('发起群聊',{back:true})}<main class="content padded"><form data-form="new-group"><div class="form-card"><div class="field"><label>群名称</label><input name="name" maxlength="30" placeholder="留空则自动生成"></div></div><div class="section-label" style="padding-left:0">选择至少 2 位联系人</div><div class="form-card">${contacts.map(contact => `<label class="row"><input type="checkbox" name="members" value="${contact.id}" style="width:22px;height:22px">${avatarHTML(contact.id,'small')}<div class="row-main"><div class="row-title">${esc(displayName(contact.id))}</div></div></label>`).join('')}</div><button class="primary-btn block-btn" type="submit">完成</button></form></main></div>`;
+}
+function allTags() {
+    const map = new Map();
+    (state.customTags || []).forEach(tag => map.set(tag,[]));
+    state.contacts.forEach(contact => (contact.tags || []).forEach(tag => { if (!map.has(tag)) map.set(tag,[]); map.get(tag).push(contact.id); }));
+    return [...map.entries()].sort((a,b) => a[0].localeCompare(b[0],'zh-CN'));
+}
+function renderTags() {
+    const tags = allTags();
+    return `<div class="view">${topbar('标签',{back:true,actions:actionIcon('new-tag','plus','','新建标签')})}<main class="content">${tags.length ? tags.map(([tag,ids]) => `<div class="section-label">${esc(tag)} · ${ids.length} 人 <button class="text-btn danger" style="float:right;min-height:28px" data-action="delete-tag" data-tag="${esc(tag)}">删除</button></div><div class="list">${ids.map(id => `<button class="row" data-action="open-contact" data-id="${id}">${avatarHTML(id,'small')}<div class="row-main"><div class="row-title">${esc(displayName(id))}</div></div></button>`).join('')}</div>`).join('') : emptyHTML('暂无标签','点击右上角新建标签，再到联系人资料中分配','file')}</main></div>`;
+}
+function renderContactDetail() {
+    const id = ui.params.id, contact = contactById(id), status = currentStatus(id);
+    const chat = state.chats.find(item => item.type === 'single' && item.contactId === id);
+    return `<div class="view">${topbar('',{back:true,actions:actionIcon('nav','more','data-view="contactEdit" data-id="'+id+'"','资料设置')})}<main class="content"><div class="list"><div class="row" style="min-height:108px">${avatarHTML(id,'large')}<div class="row-main"><div class="row-title" style="font-size:21px">${esc(displayName(id))}${contact.kind === 'ai' ? '<span class="tag ai-tag">AI</span>' : ''}</div><div class="row-sub">微信号：${esc(contact.wxid || 'local_' + id)}</div><div class="row-sub">地区：${esc(contact.region || '本机')}</div></div></div>${status ? `<div class="row"><div class="row-main"><div class="row-title">${esc(status.type)} · ${esc(status.text)}</div><div class="row-sub">${fmtFullTime(status.expiresAt)} 结束</div></div></div>` : ''}</div><div class="list" style="margin-top:10px"><div class="row"><div class="row-main"><div class="row-sub">签名</div><div class="row-title" style="white-space:normal;margin-top:5px">${esc(contact.signature || '暂无签名')}</div></div></div><div class="row"><div class="row-main"><div class="row-title">标签</div><div class="row-sub">${esc((contact.tags || []).join('、') || '未设置')}</div></div></div><button class="row" data-action="contact-moments" data-id="${id}"><div class="row-main"><div class="row-title">朋友圈</div></div>${chevron()}</button>${contact.kind === 'ai' ? `<button class="row" data-action="open-ai-settings"><div class="row-main"><div class="row-title">AI 人设与互动</div><div class="row-sub">性格、语气、主动程度、朋友圈互动</div></div>${chevron()}</button>` : ''}</div><div class="content padded" style="overflow:visible"><button class="primary-btn block-btn" data-action="open-contact-chat" data-id="${id}">${icon('chat')}发消息</button><button class="secondary-btn block-btn" data-action="unavailable" data-feature="音视频通话">${icon('video')}音视频通话</button>${chat && chat.unread ? `<div class="field-hint" style="text-align:center">有 ${chat.unread} 条未读消息</div>` : ''}</div></main></div>`;
+}
+function renderContactEdit() {
+    const id = ui.params.id, contact = contactById(id);
+    return `<div class="view">${topbar('资料设置',{back:true})}<main class="content padded"><div style="display:flex;flex-direction:column;align-items:center;gap:10px;margin:4px 0 16px">${avatarHTML(id,'large')}<button class="secondary-btn" data-action="pick-contact-avatar" data-id="${id}">更换${contact.kind === 'ai' ? ' AI ' : '联系人'}头像</button></div><form data-form="contact-edit" data-id="${id}"><div class="form-card"><div class="field"><label>备注名</label><input name="remark" value="${esc(contact.remark || '')}" maxlength="24"></div><div class="field"><label>标签</label><input name="tags" value="${esc((contact.tags || []).join('，'))}" placeholder="多个标签用逗号分隔"></div></div><div class="form-card"><div class="switch-row"><div class="switch-main"><div class="switch-title">设为星标朋友</div></div>${switchHTML('toggle-contact-star',!!contact.star,'data-id="'+id+'"','星标朋友')}</div><div class="switch-row"><div class="switch-main"><div class="switch-title">加入黑名单</div><div class="switch-sub">加入后不再接收该联系人的模拟回复</div></div>${switchHTML('toggle-contact-block',!!contact.blocked,'data-id="'+id+'"','黑名单')}</div></div><button class="primary-btn block-btn" type="submit">保存资料</button></form><button class="secondary-btn block-btn danger-btn" data-action="delete-contact" data-id="${id}">删除联系人</button></main></div>`;
+}
+function renderContactMoments() {
+    const id = ui.params.id || 'me';
+    const moments = visibleMoments(id);
+    return `<div class="view">${topbar(id === 'me' ? '我的朋友圈' : displayName(id) + '的朋友圈',{back:true,actions:id === 'me' ? actionIcon('new-moment','camera','','发布') : ''})}<main class="content">${moments.length ? moments.map(momentHTML).join('') : emptyHTML('暂无朋友圈','发布后会显示在这里','discover')}</main></div>`;
+}
+function draftMediaHTML(draft) {
+    const ids = draft.mediaIds || [];
+    const hasVideo = ids.some(id => mediaById(id)?.type.startsWith('video/'));
+    const addButton = !hasVideo && ids.length < 9 ? `<button class="add-media" data-action="choose-moment-source" aria-label="添加照片或视频">${icon('plus','large')}</button>` : '';
+    return `<div class="draft-media">${ids.map(id => { const media = mediaById(id); return media ? `<div class="media-cell">${media.type.startsWith('video/') ? `<video src="${esc(media.data)}" muted></video><span class="video-mark">${icon('play','small')}</span>` : `<img src="${esc(media.data)}" alt="">`}<button class="draft-remove" data-action="remove-draft-media" data-id="${id}">×</button></div>` : ''; }).join('')}${addButton}</div>`;
+}
+function visibilityContactsHTML(draft) {
+    if (!['include','exclude'].includes(draft.visibility)) return '';
+    const selected = draft.visibility === 'include' ? draft.visibleTo : draft.hiddenFrom;
+    return `<div class="field"><label>选择联系人</label><div class="chip-list">${state.contacts.filter(c => c.kind === 'person').map(contact => `<button type="button" class="chip ${selected.includes(contact.id) ? 'selected' : ''}" data-action="toggle-moment-contact" data-id="${contact.id}">${esc(displayName(contact.id))}</button>`).join('')}</div></div>`;
+}
+function renderMomentPublish() {
+    if (!ui.momentDraft) ui.momentDraft = {text:'',mediaIds:[],location:'',visibility:'public',visibleTo:[],hiddenFrom:[]};
+    const draft = ui.momentDraft;
+    return `<div class="view">${topbar('发表文字',{back:true,actions:'<button class="text-btn" data-action="publish-moment">发表</button>'})}<main class="content"><div class="form-card" style="border-radius:0"><div class="field"><textarea id="moment-text" data-input="moment-text" maxlength="2000" placeholder="这一刻的想法…" style="min-height:150px">${esc(draft.text)}</textarea></div>${draftMediaHTML(draft)}<div class="field"><div class="field-hint">最多 9 张图片，或 1 个视频。视频不超过 200 MB。</div></div><div class="field"><label>所在位置</label><input data-input="moment-location" value="${esc(draft.location)}" placeholder="手动填写，不读取真实定位"></div><div class="field"><div class="inline-field"><label>谁可以看</label><select data-change="moment-visibility"><option value="public" ${draft.visibility === 'public' ? 'selected' : ''}>公开</option><option value="private" ${draft.visibility === 'private' ? 'selected' : ''}>私密（仅自己）</option><option value="include" ${draft.visibility === 'include' ? 'selected' : ''}>部分可见</option><option value="exclude" ${draft.visibility === 'exclude' ? 'selected' : ''}>不给谁看</option></select></div></div>${visibilityContactsHTML(draft)}</div><div class="notice">发布到本机朋友圈。若已开启 AI 互动，AI 会按人设和频率自然地点赞或评论。</div></main></div>`;
+}
+function statusCardHTML(status) {
+    const media = mediaById(status.mediaId), liked = (status.likes || []).includes('me');
+    return `<div class="status-card" style="background:${esc(status.color || '#607d8b')}">${media && media.type.startsWith('image/') ? `<img class="status-card-bg" src="${esc(media.data)}" alt="">` : media && media.type.startsWith('video/') ? `<video class="status-card-bg" src="${esc(media.data)}" muted playsinline></video>` : ''}<div class="status-shade"></div><button class="status-like" data-action="like-status" data-id="${status.id}">${liked ? '已赞' : '赞'} ${(status.likes || []).length || ''}</button><div class="status-content"><div class="status-type">${esc(displayName(status.owner))} · ${esc(status.type)}</div><div class="status-text">${esc(status.text || status.type)}</div><div class="status-owner">${status.owner === 'me' ? '我的状态' : '朋友状态'}</div><div class="status-expire">${fmtFullTime(status.expiresAt)} 结束</div></div></div>`;
+}
+function renderFriendsStatus() {
+    const statuses = state.statuses.filter(status => status.expiresAt > Date.now() && (status.owner === 'me' || status.visibility === 'public')).sort((a,b) => (a.owner === 'me' ? -1 : b.owner === 'me' ? 1 : b.createdAt - a.createdAt));
+    return `<div class="view">${topbar('朋友状态',{back:true,actions:actionIcon('new-status','plus','','发布状态')})}<main class="content">${statuses.length ? statuses.map(statusCardHTML).join('') : emptyHTML('暂无朋友状态','发布一个状态，24 小时内可见','smile')}<div class="list"><button class="row" data-action="nav" data-view="statusHistory"><div class="row-main"><div class="row-title">我的状态记录</div></div>${chevron()}</button>${currentStatus('me') ? `<button class="row" data-action="end-status"><div class="row-main"><div class="row-title" style="color:var(--danger)">结束当前状态</div></div></button>` : ''}</div></main></div>`;
+}
+function renderStatusEdit() {
+    if (!ui.statusDraft) ui.statusDraft = {type:'心情不错',text:'',color:'#07c160',mediaId:'',visibility:'public'};
+    const draft = ui.statusDraft;
+    const types = ['心情不错','忙','发呆','工作','学习','运动','听歌','睡觉','休息','玩游戏','吃饭','旅行'];
+    const colors = ['#07c160','#5d8aa8','#bf8b56','#9b7fb8','#6e6e6e','#d46a6a'];
+    const media = mediaById(draft.mediaId);
+    return `<div class="view">${topbar('设个状态',{back:true,actions:'<button class="text-btn" data-action="publish-status">就这样</button>'})}<main class="content"><div class="status-grid">${types.map(type => `<button class="status-option ${draft.type === type ? 'selected' : ''}" data-action="select-status-type" data-value="${type}"><span class="status-symbol">${esc(type.slice(0,1))}</span><span>${type}</span></button>`).join('')}</div><div class="form-card"><div class="field"><textarea data-input="status-text" maxlength="100" placeholder="说点什么…">${esc(draft.text)}</textarea></div><div class="field"><label>背景颜色</label><div class="color-swatches" style="padding:4px 0">${colors.map(color => `<button class="color-swatch ${draft.color === color ? 'selected' : ''}" style="background:${color}" data-action="select-status-color" data-value="${color}" aria-label="选择颜色"></button>`).join('')}</div></div><div class="field"><button class="secondary-btn" data-action="pick-status-media">${icon('image')}${media ? '更换背景照片或视频' : '添加背景照片或视频'}</button>${media ? `<button class="text-btn danger" data-action="remove-status-media">移除背景</button><div class="field-hint">${esc(media.name)} · ${fmtSize(media.size)}</div>` : ''}</div><div class="field"><div class="inline-field"><label>谁可以看</label><select data-change="status-visibility"><option value="public" ${draft.visibility === 'public' ? 'selected' : ''}>公开</option><option value="private" ${draft.visibility === 'private' ? 'selected' : ''}>私密</option></select></div><div class="field-hint">状态将在发布 24 小时后自动结束。</div></div></div></main></div>`;
+}
+function renderStatusHistory() {
+    const statuses = state.statuses.filter(status => status.owner === 'me').sort((a,b) => b.createdAt - a.createdAt);
+    return `<div class="view">${topbar('我的状态记录',{back:true})}<main class="content">${statuses.length ? `<div class="list">${statuses.map(status => `<div class="row"><div class="avatar" style="background:${esc(status.color)}">${esc(status.type.slice(0,1))}</div><div class="row-main"><div class="row-title">${esc(status.type)} · ${esc(status.text)}</div><div class="row-sub">${fmtFullTime(status.createdAt)} · ${status.expiresAt > Date.now() ? '进行中' : '已结束'}</div></div></div>`).join('')}</div>` : emptyHTML('暂无状态记录','设个状态，记录当下的心情','smile')}</main></div>`;
+}
+function renderFavorites() {
+    const term = (ui.favoriteFilter || '').toLowerCase();
+    const items = [...state.favorites].filter(item => !term || (item.text || '').toLowerCase().includes(term)).sort((a,b) => b.createdAt - a.createdAt);
+    return `<div class="view">${topbar('收藏',{back:true,actions:actionIcon('nav','plus','data-view="favoriteEdit"','新建收藏')})}<div class="search-wrap"><form class="search-form" data-form="favorite-search"><input name="term" value="${esc(ui.favoriteFilter || '')}" placeholder="搜索收藏"><button type="submit">搜索</button></form></div><main class="content">${items.length ? `<div class="list">${items.map(item => `<div class="row" style="align-items:flex-start"><button style="flex:1;min-width:0;border:0;background:transparent;text-align:left;padding:0" data-action="open-favorite" data-id="${item.id}"><div class="row-title" style="white-space:normal">${esc(item.text || '[媒体收藏]')}</div>${mediaGridHTML(item.mediaIds)}<div class="row-sub">${esc(item.source || '手动收藏')} · ${fmtFullTime(item.createdAt)}</div></button>${chevron()}</div>`).join('')}</div>` : emptyHTML(term ? '没有匹配的收藏' : '暂无收藏','长按聊天消息可以收藏，也可以点击右上角新建','star')}</main></div>`;
+}
+function renderFavoriteEdit() {
+    return `<div class="view">${topbar('新建收藏',{back:true})}<main class="content padded"><form data-form="favorite-edit"><div class="form-card"><div class="field"><textarea name="text" required maxlength="5000" placeholder="记录一段文字…" style="min-height:200px"></textarea></div></div><button class="primary-btn block-btn" type="submit">保存收藏</button></form></main></div>`;
+}
+function mediaReferences(mediaId) {
+    let count = 0;
+    if (state.profile.avatarMediaId === mediaId) count++;
+    state.contacts.forEach(contact => { if (contact.avatarMediaId === mediaId) count++; });
+    state.messages.forEach(message => { if (message.mediaId === mediaId) count++; });
+    state.moments.forEach(moment => { if ((moment.mediaIds || []).includes(mediaId)) count++; });
+    state.statuses.forEach(status => { if (status.mediaId === mediaId) count++; });
+    state.favorites.forEach(item => { if ((item.mediaIds || []).includes(mediaId)) count++; });
+    if (ui.momentDraft?.mediaIds.includes(mediaId) || ui.statusDraft?.mediaId === mediaId) count++;
+    return count;
+}
+function renderFiles() {
+    const all = Object.values(state.media).sort((a,b) => b.createdAt - a.createdAt);
+    const filter = ui.mediaFilter;
+    const items = all.filter(media => filter === 'all' || (filter === 'file' ? !/^(image|video|audio)\//.test(media.type) : media.type.startsWith(filter + '/')));
+    const total = all.reduce((sum,media) => sum + (Number(media.size) || 0),0);
+    const unused = all.filter(media => mediaReferences(media.id) === 0).length;
+    return `<div class="view">${topbar('本地文件',{back:true,actions:actionIcon('cleanup-media','trash','','清理未引用文件')})}<main class="content"><div class="stat-grid"><div class="stat-card"><div class="stat-value">${all.length}</div><div class="stat-label">全部文件</div></div><div class="stat-card"><div class="stat-value">${fmtSize(total)}</div><div class="stat-label">媒体体积</div></div><div class="stat-card"><div class="stat-value">${unused}</div><div class="stat-label">未引用文件</div></div></div><div class="chip-list" style="padding:8px 14px">${[['all','全部'],['image','图片'],['video','视频'],['audio','音频'],['file','其他']].map(([id,name]) => `<button class="chip ${filter === id ? 'selected' : ''}" data-action="media-filter" data-id="${id}">${name}</button>`).join('')}</div>${items.length ? `<div class="list">${items.map(media => `<button class="row" data-action="view-media" data-id="${media.id}">${media.type.startsWith('image/') ? `<img class="avatar" src="${esc(media.data)}" alt="">` : `<div class="avatar" style="background:#8a8a8a">${icon(media.type.startsWith('video/') ? 'video' : media.type.startsWith('audio/') ? 'mic' : 'file')}</div>`}<div class="row-main"><div class="row-title">${esc(media.name)}</div><div class="row-sub">${mimeLabel(media)} · ${fmtSize(media.size)} · ${mediaReferences(media.id)} 处引用</div></div><span class="row-meta">${fmtTime(media.createdAt)}</span></button>`).join('')}</div>` : emptyHTML('暂无文件','聊天、朋友圈或状态中导入的媒体会显示在这里','folder')}<div class="notice">导出图片、视频或其他文件时，会打开 iOS 系统分享面板，可选择“存储到文件”。</div></main></div>`;
+}
+function renderSettings() {
+    const ai = state.settings.ai;
+    return `<div class="view">${topbar('设置',{back:true})}<main class="content"><div class="list" style="margin-top:10px"><button class="row" data-action="nav" data-view="profile"><div class="row-main"><div class="row-title">账号与个人资料</div><div class="row-sub">头像、名字、微信号、签名</div></div>${chevron()}</button></div><div class="list" style="margin-top:10px"><button class="row" data-action="open-ai-settings"><span class="row-icon">${icon('ai')}</span><div class="row-main"><div class="row-title">AI 服务与人设</div><div class="row-sub">${ai.enabled ? esc(ai.model) + ' · ' + esc(ai.personaName) : '未启用'} · 接口、性格、朋友圈互动</div></div>${chevron()}</button></div><div class="section-label">通用</div><div class="list"><div class="switch-row"><div class="switch-main"><div class="switch-title">深色模式</div></div>${switchHTML('toggle-dark',state.settings.theme === 'dark','','深色模式')}</div><div class="switch-row"><div class="switch-main"><div class="switch-title">本地联系人自动回复</div><div class="switch-sub">不影响 DeepSeek AI 会话</div></div>${switchHTML('toggle-auto-reply',state.settings.autoReply,'','自动回复')}</div><div class="switch-row"><div class="switch-main"><div class="switch-title">回车键发送消息</div></div>${switchHTML('toggle-enter-send',state.settings.enterSend,'','回车发送')}</div><div class="switch-row"><div class="switch-main"><div class="switch-title">应用内消息提醒</div><div class="switch-sub">显示未读数量，不申请系统通知权限</div></div>${switchHTML('toggle-notifications',state.settings.notifications,'','消息提醒')}</div><div class="field"><div class="inline-field"><label>字体大小</label><select data-change="font-scale"><option value="0.92" ${state.settings.fontScale == 0.92 ? 'selected' : ''}>较小</option><option value="1" ${state.settings.fontScale == 1 ? 'selected' : ''}>标准</option><option value="1.1" ${state.settings.fontScale == 1.1 ? 'selected' : ''}>较大</option><option value="1.2" ${state.settings.fontScale == 1.2 ? 'selected' : ''}>特大</option></select></div></div><div class="field"><label>聊天背景</label><div class="color-swatches" style="padding:4px 0">${['#f3f3f3','#e6edf3','#e9e2d5','#dce9df','#202224'].map(color => `<button class="color-swatch ${state.settings.chatBackground === color ? 'selected' : ''}" style="background:${color}" data-action="set-chat-bg" data-value="${color}"></button>`).join('')}</div></div></div><div class="section-label">数据与关于</div><div class="list"><button class="row" data-action="nav" data-view="backup"><span class="row-icon">${icon('lock')}</span><div class="row-main"><div class="row-title">备份与恢复</div></div>${chevron()}</button><button class="row" data-action="nav" data-view="files"><span class="row-icon">${icon('folder')}</span><div class="row-main"><div class="row-title">存储空间</div></div>${chevron()}</button><button class="row" data-action="nav" data-view="about"><span class="row-icon">${icon('info')}</span><div class="row-main"><div class="row-title">关于微信单机版</div></div>${chevron()}</button></div></main></div>`;
+}
+function renderAISettings() {
+    const ai = state.settings.ai;
+    return `<div class="view">${topbar('AI 服务与人设',{back:true})}<main class="content padded"><form data-form="ai-settings" id="ai-settings-form"><div class="form-card"><div class="switch-row"><div class="switch-main"><div class="switch-title">启用 AI</div><div class="switch-sub">仅 AI 会话与 AI 互动使用网络</div></div>${switchHTML('toggle-ai-enabled',ai.enabled,'','启用 AI')}</div><div class="field"><label>接口地址</label><input class="code-text" name="endpoint" value="${esc(ai.endpoint)}" required inputmode="url"></div><div class="field"><label>API Key</label><div class="inline-field"><input type="password" name="apiKey" value="${esc(ui.aiKeyValue || '')}" placeholder="sk-…" autocomplete="off"><button type="button" class="text-btn" data-action="toggle-key-visibility">显示</button></div><div class="field-hint">保存在 iOS Keychain，不写入聊天数据库或备份。</div></div><div class="field"><div class="inline-field"><label>模型</label><input name="model" value="${esc(ai.model)}" required placeholder="deepseek-chat"></div><div class="field-hint">对话通常为 deepseek-chat，推理模型为 deepseek-reasoner。</div></div><div class="field"><label>多模态接口（可选）</label><input class="code-text" name="mediaEndpoint" value="${esc(ai.mediaEndpoint || '')}" placeholder="留空则沿用上方接口"></div><div class="field"><label>视觉模型（可选）</label><input name="mediaModel" value="${esc(ai.mediaModel || '')}" placeholder="填写你的 OpenAI 兼容视觉模型名称"><div class="field-hint">填写后，发给 AI 的图片会用于图像理解，视频会抽取 3 帧分析；沿用同一 API Key。留空则按纯文本 DeepSeek 处理，不假装能看懂媒体。</div></div><div class="field"><label>系统提示词</label><textarea name="systemPrompt" maxlength="2000">${esc(ai.systemPrompt)}</textarea></div><div class="field"><div class="inline-field"><label>Temperature</label><input name="temperature" type="number" min="0" max="2" step="0.1" value="${ai.temperature}"></div></div><div class="field"><div class="inline-field"><label>最大输出 Token</label><input name="maxTokens" type="number" min="64" max="8192" step="64" value="${ai.maxTokens}"></div></div><div class="field"><div class="inline-field"><label>携带上下文条数</label><input name="contextCount" type="number" min="2" max="60" step="1" value="${ai.contextCount}"></div></div></div><div class="button-row"><button type="button" class="secondary-btn" data-action="test-ai" ${ui.aiTesting ? 'disabled' : ''}>${ui.aiTesting ? '正在测试…' : '测试连接'}</button><button type="submit" class="primary-btn">保存全部设置</button></div>${ui.aiTestMessage ? `<div class="notice ${ui.aiTestMessage.startsWith('失败') ? 'warn' : ''}">${esc(ui.aiTestMessage)}</div>` : ''}<div class="section-label" style="padding-left:0">AI 人设</div><div class="form-card"><div class="field"><label>名字</label><input name="personaName" maxlength="16" value="${esc(ai.personaName)}" required></div><div class="field"><label>性格</label><textarea name="personality" maxlength="1000">${esc(ai.personality)}</textarea></div><div class="field"><label>说话方式</label><textarea name="speakingStyle" maxlength="1000">${esc(ai.speakingStyle)}</textarea></div><div class="field"><label>与你的关系</label><input name="relationship" maxlength="40" value="${esc(ai.relationship)}"></div><div class="field"><label>自定义补充要求</label><textarea name="customPrompt" maxlength="2000" placeholder="例如：不要总说教，像朋友一样接话；评论一般不超过两句。">${esc(ai.customPrompt)}</textarea></div><div class="field"><div class="inline-field"><label>回复速度</label><select name="replySpeed"><option value="instant" ${ai.replySpeed === 'instant' ? 'selected' : ''}>较快</option><option value="natural" ${ai.replySpeed === 'natural' ? 'selected' : ''}>自然</option><option value="slow" ${ai.replySpeed === 'slow' ? 'selected' : ''}>较慢</option></select></div></div><div class="field"><label>主动程度：<span id="proactivity-value">${ai.proactivity}</span>%</label><input name="proactivity" type="range" min="0" max="100" value="${ai.proactivity}" data-input="proactivity" style="width:100%"></div><div class="field"><div class="inline-field"><label>免打扰开始</label><input name="quietStart" type="time" value="${esc(ai.quietStart)}"></div><div class="inline-field"><label>免打扰结束</label><input name="quietEnd" type="time" value="${esc(ai.quietEnd)}"></div></div></div><div class="form-card"><div class="switch-row"><div class="switch-main"><div class="switch-title">朋友圈自动点赞</div></div>${switchHTML('toggle-ai-like',ai.autoLike,'','AI 自动点赞')}</div><div class="switch-row"><div class="switch-main"><div class="switch-title">朋友圈自动评论</div><div class="switch-sub">按人设生成自然评论</div></div>${switchHTML('toggle-ai-comment',ai.autoComment,'','AI 自动评论')}</div><div class="switch-row"><div class="switch-main"><div class="switch-title">偶尔主动发消息</div><div class="switch-sub">应用打开时，按主动程度与非免打扰时段触发</div></div>${switchHTML('toggle-ai-proactive',ai.proactiveChat,'','AI 主动消息')}</div><div class="switch-row"><div class="switch-main"><div class="switch-title">无接口时使用本地互动文案</div><div class="switch-sub">点赞无需接口；本地文案不会冒充 DeepSeek 生成</div></div>${switchHTML('toggle-ai-fallback',ai.localFallback,'','本地互动文案')}</div></div><button type="submit" class="primary-btn block-btn">保存全部设置</button></form><div class="notice warn">AI 聊天会发送当前 AI 会话的最近消息；AI 评论会发送新朋友圈的文字与媒体数量。配置视觉模型后，你主动发给 AI 的图片或视频抽帧也会发送到该视觉接口。不会发送其他联系人聊天、完整朋友圈或未经选择的媒体。</div></main></div>`;
+}
+function renderProfile() {
+    return `<div class="view">${topbar('个人资料',{back:true})}<main class="content padded"><div style="display:flex;flex-direction:column;align-items:center;gap:12px;margin:10px 0 20px">${avatarHTML('me','large')}<button class="secondary-btn" data-action="pick-profile-avatar">更换头像</button></div><form data-form="profile"><div class="form-card"><div class="field"><label>名字</label><input name="name" required maxlength="24" value="${esc(state.profile.name)}"></div><div class="field"><label>微信号</label><input name="wxid" required maxlength="32" value="${esc(state.profile.wxid)}"></div><div class="field"><label>个性签名</label><textarea name="signature" maxlength="100">${esc(state.profile.signature)}</textarea></div><div class="field"><label>地区</label><input name="region" maxlength="30" value="${esc(state.profile.region || '本机')}"></div></div><button class="primary-btn block-btn" type="submit">保存</button></form></main></div>`;
+}
+function renderBackup() {
+    return `<div class="view">${topbar('备份与恢复',{back:true})}<main class="content padded"><div class="notice">备份包含联系人、聊天、朋友圈、状态、收藏、设置与本地媒体。API Key 不会写入备份。</div><button class="primary-btn block-btn" data-action="export-backup">${icon('download')}导出完整备份</button><button class="secondary-btn block-btn" data-action="import-backup">${icon('folder')}从备份恢复</button><div class="section-label" style="padding-left:0">危险操作</div><button class="danger-btn block-btn" data-action="clear-all-data">清除全部应用数据</button><div class="field-hint" style="margin-top:12px">清除会删除本机数据库及 Keychain 中的 AI 密钥，且无法撤销。</div></main></div>`;
+}
+function renderAbout() {
+    return `<div class="view">${topbar('关于',{back:true})}<main class="content padded"><div style="text-align:center;padding:26px 0"><div class="boot-mark">微</div><h2 style="margin:14px 0 5px">微信单机版</h2><div class="row-sub">iOS 16.1 · TrollStore · v${esc(Native.version())}</div></div><div class="form-card"><div class="field"><b>本地优先</b><div class="field-hint">联系人、聊天、朋友圈、状态与收藏默认保存在本机 IndexedDB，不连接真实微信。</div></div><div class="field"><b>可选 AI</b><div class="field-hint">启用 DeepSeek 后，仅明确配置的 AI 功能联网；API Key 使用 iOS Keychain 保存。</div></div><div class="field"><b>独立应用</b><div class="field-hint">这是高保真离线交互项目，与微信官方无关，不支持真实微信登录、远程通信、支付或真实音视频通话。</div></div></div></main></div>`;
+}
+function renderChatInfo() {
+    const chat = chatById(ui.params.id);
+    if (!chat) return renderChat();
+    const contact = contactById(chat.contactId);
+    const members = chat.type === 'group' ? `<div class="member-grid">${chat.participants.map(id => `<button class="member-item" data-action="${id === 'me' ? 'nav' : 'open-contact'}" ${id === 'me' ? 'data-view="profile"' : `data-id="${id}"`}>${avatarHTML(id)}<span>${esc(displayName(id))}</span></button>`).join('')}<button class="member-item" data-action="show-add-members"><div class="avatar" style="background:var(--panel-2);color:var(--muted)">${icon('plus')}</div><span>添加</span></button></div>${ui.params.addMembers ? `<div class="chip-list" style="padding:0 16px 16px">${state.contacts.filter(c => !chat.participants.includes(c.id) && c.kind !== 'assistant').map(c => `<button class="chip" data-action="add-group-member" data-id="${c.id}">${esc(displayName(c.id))}</button>`).join('')}</div>` : ''}` : `<div class="list"><button class="row" data-action="open-contact" data-id="${chat.contactId}">${avatarHTML(chat.contactId)}<div class="row-main"><div class="row-title">${esc(chatName(chat))}</div><div class="row-sub">${esc(contact.signature || '')}</div></div>${chevron()}</button></div>`;
+    return `<div class="view">${topbar(chat.type === 'group' ? '群聊信息' : '聊天信息',{back:true})}<main class="content">${members}${chat.type === 'group' ? `<div class="list"><button class="row" data-action="edit-group-name"><div class="row-main"><div class="row-title">群聊名称</div></div><span class="row-sub">${esc(chat.name)}</span>${chevron()}</button></div>` : ''}<div class="list" style="margin-top:10px"><div class="switch-row"><div class="switch-main"><div class="switch-title">置顶聊天</div></div>${switchHTML('toggle-chat-pin',chat.pinned,'','置顶')}</div><div class="switch-row"><div class="switch-main"><div class="switch-title">消息免打扰</div></div>${switchHTML('toggle-chat-mute',chat.muted,'','免打扰')}</div>${contact.kind === 'ai' ? `<button class="row" data-action="open-ai-settings"><div class="row-main"><div class="row-title">AI 服务与人设</div></div>${chevron()}</button>` : ''}</div><div class="content padded" style="overflow:visible"><button class="secondary-btn block-btn" data-action="clear-chat-history">清空聊天记录</button><button class="danger-btn block-btn" data-action="delete-chat">删除会话</button></div></main></div>`;
+}
+function navigate(view, params = {}) {
+    closeOverlay();
+    ui.stack.push({view:ui.view,tab:ui.tab,params:deepClone(ui.params)});
+    ui.view = view;
+    ui.params = params;
+    ui.composerPanel = '';
+    ui.voiceMode = false;
+    render();
+}
+function switchTab(tab) {
+    closeOverlay();
+    ui.tab = tab;
+    ui.view = 'main';
+    ui.params = {};
+    ui.stack = [];
+    render();
+}
+function goBack() {
+    closeOverlay();
+    const previous = ui.stack.pop();
+    if (previous) {
+        ui.view = previous.view;
+        ui.tab = previous.tab;
+        ui.params = previous.params || {};
+    } else {
+        ui.view = 'main';
+        ui.params = {};
+    }
+    ui.composerPanel = '';
+    ui.voiceMode = false;
+    render();
+}
+window.__androidBack = function() {
+    if (overlayRoot.innerHTML) { closeOverlay(); return 'handled'; }
+    if (ui.view !== 'main') { goBack(); return 'handled'; }
+    if (ui.tab !== 'chats') { switchTab('chats'); return 'handled'; }
+    return 'root';
+};
+async function openAISettings() {
+    try { ui.aiKeyValue = await Native.getApiKey(); }
+    catch (error) { ui.aiKeyValue = ''; toast('无法读取 Keychain：' + error.message,3500); }
+    navigate('aiSettings');
+}
+function openChat(id) {
+    const chat = chatById(id);
+    if (!chat) return toast('会话不存在');
+    chat.unread = 0;
+    persist();
+    navigate('chat',{id});
+    persist();
+}
+function openContactChat(contactId) {
+    let chat = state.chats.find(item => item.type === 'single' && item.contactId === contactId);
+    if (!chat) {
+        chat = {id:uid('chat'),type:'single',contactId,name:displayName(contactId),participants:['me',contactId],pinned:false,muted:false,unread:0,draft:'',updatedAt:Date.now()};
+        state.chats.push(chat);
+    }
+    openChat(chat.id);
+}
+let forwardCallback = null;
+function showChatPicker(title, callback) {
+    forwardCallback = callback;
+    showSheet(title,sortedChats().map(chat => ({label:chatName(chat),action:'pick-forward-chat',data:`data-id="${chat.id}"`})));
+}
+function showMainPlus() {
+    showSheet('',[
+        {label:'发起群聊',action:'nav',data:'data-view="newGroup"'},
+        {label:'添加朋友',action:'nav',data:'data-view="newContact"'},
+        {label:'新建收藏',action:'nav',data:'data-view="favoriteEdit"'},
+        {label:'AI 服务与人设',action:'open-ai-settings'}
+    ]);
+}
+function insertFace(value) {
+    const input = document.getElementById('message-input');
+    if (!input) return;
+    const start = input.selectionStart || input.value.length;
+    input.value = input.value.slice(0,start) + value + input.value.slice(input.selectionEnd || start);
+    input.focus();
+    input.selectionStart = input.selectionEnd = start + value.length;
+    input.dispatchEvent(new Event('input',{bubbles:true}));
+}
+function sendText() {
+    const chat = activeChat(), input = document.getElementById('message-input');
+    if (!chat || !input) return;
+    const text = input.value.trim();
+    if (!text) return;
+    if (contactById(chat.contactId).blocked) return toast('该联系人已加入黑名单');
+    if (contactById(chat.contactId).kind === 'ai' && ui.aiTypingChats.has(chat.id)) return toast('AI 正在回复，请稍等');
+    addMessage(chat.id,{sender:'me',type:'text',text});
+    chat.draft = '';
+    ui.composerPanel = '';
+    commit();
+    if (contactById(chat.contactId).kind === 'ai') sendAIResponse(chat.id);
+    else scheduleLocalReply(chat.id,text);
+}
+function scheduleLocalReply(chatId, sourceText) {
+    const chat = chatById(chatId);
+    if (!chat || !state.settings.autoReply || contactById(chat.contactId).blocked || contactById(chat.contactId).kind === 'assistant') return;
+    const candidates = chat.type === 'group' ? chat.participants.filter(id => id !== 'me' && contactById(id).kind !== 'ai' && !contactById(id).blocked) : [chat.contactId];
+    if (!candidates.length) return;
+    const sender = randomItem(candidates);
+    const text = /在吗|在么/.test(sourceText) ? '在的，刚看到。' : /图片|照片/.test(sourceText) ? '看到了，回头我也试试。' : /周六|周末|打球/.test(sourceText) ? '可以，时间就按之前说的。' : /谢谢|感谢/.test(sourceText) ? '不用客气。' : randomItem(['嗯嗯，我明白了。','好，就这么安排。','刚看到，觉得挺不错的。','可以的，晚点再接着聊。','哈哈，这个有意思。']);
+    setTimeout(() => {
+        if (!chatById(chatId)) return;
+        addMessage(chatId,{sender,type:'text',text});
+        commit();
+    },900 + Math.random() * 1800);
+}
+function sendMediaToChat(chatId, mediaId, forcedType = '') {
+    const media = mediaById(mediaId), chat = chatById(chatId);
+    if (!media || !chat) return;
+    const type = forcedType || (media.type.startsWith('image/') ? 'image' : media.type.startsWith('video/') ? 'video' : media.type.startsWith('audio/') ? 'audio' : 'file');
+    addMessage(chatId,{sender:'me',type,mediaId,fileName:media.name,duration:type === 'audio' ? 1 : undefined});
+    ui.composerPanel = '';
+    commit();
+    if (contactById(chat.contactId).kind === 'ai') sendAIResponse(chatId);
+    else scheduleLocalReply(chatId,'[' + mimeLabel(media) + ']');
+}
+function copyText(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(() => toast('已复制')).catch(() => fallbackCopy(text));
+    } else fallbackCopy(text);
+}
+function fallbackCopy(text) {
+    const area = document.createElement('textarea');
+    area.value = text;
+    area.style.position = 'fixed'; area.style.opacity = '0';
+    document.body.appendChild(area); area.select();
+    try { document.execCommand('copy'); toast('已复制'); } catch (error) { toast('复制失败'); }
+    area.remove();
+}
+function messageActionSheet(chatId, messageId) {
+    const message = state.messages.find(item => item.id === messageId && item.chatId === chatId);
+    if (!message || message.recalled) return;
+    const items = [];
+    if (message.type === 'text') items.push({label:'复制',action:'copy-message',data:`data-id="${messageId}" data-chat="${chatId}"`});
+    items.push({label:'转发',action:'forward-message',data:`data-id="${messageId}" data-chat="${chatId}"`});
+    items.push({label:'收藏',action:'favorite-message',data:`data-id="${messageId}" data-chat="${chatId}"`});
+    if (message.sender === 'me' && Date.now() - message.time <= 120000) items.push({label:'撤回',action:'recall-message',data:`data-id="${messageId}" data-chat="${chatId}"`});
+    items.push({label:'删除',action:'delete-message',data:`data-id="${messageId}" data-chat="${chatId}"`,danger:true});
+    showSheet('消息操作',items);
+}
+function forwardMessage(chatId, message) {
+    addMessage(chatId,{sender:'me',type:message.type,text:message.text || '',mediaId:message.mediaId || '',fileName:message.fileName || '',duration:message.duration || 0});
+    commit();
+}
+function showMessageForward(chatId, messageId) {
+    const message = state.messages.find(item => item.id === messageId && item.chatId === chatId);
+    if (!message) return;
+    closeOverlay();
+    showChatPicker('发送给',targetId => {
+        forwardMessage(targetId,message);
+        toast('已发送');
+    });
+}
+function favoriteMessage(chatId, messageId) {
+    const message = state.messages.find(item => item.id === messageId && item.chatId === chatId);
+    if (!message) return;
+    closeOverlay();
+    state.favorites.push({id:uid('fav'),type:'message',text:message.type === 'text' ? message.text : '[' + messagePreview(message) + ']',mediaIds:message.mediaId ? [message.mediaId] : [],source:chatName(chatById(chatId)),createdAt:Date.now()});
+    commit();
+    toast('已收藏');
+}
+let mediaRecorder = null;
+let recordChunks = [];
+let recordStream = null;
+let recordStartedAt = 0;
+let recordCancelRequested = false;
+async function startVoiceRecording() {
+    const chat = activeChat();
+    if (!chat || mediaRecorder) return;
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') return toast('当前 WebView 不支持语音录制',3500);
+    recordCancelRequested = false;
+    try {
+        recordStream = await navigator.mediaDevices.getUserMedia({audio:true});
+        if (recordCancelRequested) { recordStream.getTracks().forEach(track => track.stop()); recordStream = null; return; }
+        recordChunks = [];
+        mediaRecorder = new MediaRecorder(recordStream);
+        mediaRecorder.ondataavailable = event => { if (event.data.size) recordChunks.push(event.data); };
+        mediaRecorder.onstop = async () => {
+            const duration = Math.max(1,Math.round((Date.now() - recordStartedAt) / 1000));
+            const blob = new Blob(recordChunks,{type:mediaRecorder.mimeType || 'audio/mp4'});
+            recordStream?.getTracks().forEach(track => track.stop());
+            recordStream = null;
+            mediaRecorder = null;
+            document.getElementById('voice-record')?.classList.remove('recording');
+            const button = document.getElementById('voice-record'); if (button) button.textContent = '按住 说话';
+            if (recordCancelRequested || Date.now() - recordStartedAt < 700) return toast('说话时间太短');
+            try {
+                const extension = blob.type.includes('webm') ? 'webm' : 'm4a';
+                const file = new File([blob],'语音_' + Date.now() + '.' + extension,{type:blob.type || 'audio/mp4'});
+                const mediaId = await importMediaFile(file);
+                addMessage(chat.id,{sender:'me',type:'audio',mediaId,duration});
+                commit();
+                if (contactById(chat.contactId).kind === 'ai') sendAIResponse(chat.id); else scheduleLocalReply(chat.id,'[语音]');
+            } catch (error) { toast('语音保存失败：' + error.message,3500); }
+        };
+        recordStartedAt = Date.now();
+        mediaRecorder.start();
+        const button = document.getElementById('voice-record');
+        if (button) { button.classList.add('recording'); button.textContent = '松开 发送'; }
+    } catch (error) {
+        recordStream?.getTracks().forEach(track => track.stop());
+        recordStream = null; mediaRecorder = null;
+        toast('无法使用麦克风：' + (error.message || '权限未开启'),3500);
+    }
+}
+function stopVoiceRecording(cancel = false) {
+    recordCancelRequested = cancel;
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+    else {
+        recordStream?.getTracks().forEach(track => track.stop());
+        recordStream = null;
+    }
+}
+function playAudio(mediaId, button) {
+    const media = mediaById(mediaId);
+    if (!media) return;
+    if (currentAudio) { currentAudio.pause(); document.querySelectorAll('.audio-btn.playing').forEach(item => item.classList.remove('playing')); currentAudio = null; }
+    currentAudio = new Audio(media.data);
+    button.classList.add('playing');
+    currentAudio.onended = () => { button.classList.remove('playing'); currentAudio = null; };
+    currentAudio.onerror = () => { button.classList.remove('playing'); currentAudio = null; toast('音频无法播放'); };
+    currentAudio.play().catch(() => { button.classList.remove('playing'); toast('请再次点击播放'); });
+}
+function publishMoment() {
+    const draft = ui.momentDraft;
+    if (!draft || (!draft.text.trim() && !draft.mediaIds.length)) return toast('说点什么，或添加照片视频');
+    if (draft.visibility === 'include' && !draft.visibleTo.length) return toast('请选择至少一位可见联系人');
+    if (draft.visibility === 'exclude' && !draft.hiddenFrom.length) return toast('请选择不可见联系人');
+    const moment = {id:uid('moment'),author:'me',text:draft.text.trim(),mediaIds:[...draft.mediaIds],location:draft.location.trim(),time:Date.now(),likes:[],comments:[],visibility:draft.visibility,visibleTo:[...draft.visibleTo],hiddenFrom:[...draft.hiddenFrom],aiInteracted:false};
+    state.moments.push(moment);
+    ui.momentDraft = null;
+    persist();
+    goBack();
+    toast('已发表');
+    scheduleAIInteractions(moment);
+}
+function addMomentMedia(ids, files) {
+    const draft = ui.momentDraft;
+    if (!draft) return;
+    const existingMedia = draft.mediaIds.map(mediaById).filter(Boolean);
+    const newMedia = ids.map(mediaById).filter(Boolean);
+    const hasVideo = existingMedia.concat(newMedia).some(media => media.type.startsWith('video/'));
+    if (hasVideo && existingMedia.length + newMedia.length > 1) {
+        ids.forEach(id => delete state.media[id]);
+        return toast('朋友圈只能发布单个视频，或最多 9 张图片',3500);
+    }
+    if (existingMedia.length + newMedia.length > 9) return toast('最多添加 9 张图片');
+    draft.mediaIds.push(...ids);
+    commit();
+}
+function shareMoment(momentId) {
+    const moment = state.moments.find(item => item.id === momentId);
+    if (!moment) return;
+    closeOverlay();
+    showChatPicker('发送给朋友',chatId => {
+        if (moment.text.trim()) addMessage(chatId,{sender:'me',type:'text',text:moment.text});
+        (moment.mediaIds || []).forEach(mediaId => addMessage(chatId,{sender:'me',type:mediaById(mediaId)?.type.startsWith('video/') ? 'video' : 'image',mediaId}));
+        commit(); toast('已发送给朋友');
+    });
+}
+function publishStatus() {
+    const draft = ui.statusDraft;
+    if (!draft) return;
+    const now = Date.now();
+    state.statuses.filter(status => status.owner === 'me' && status.expiresAt > now).forEach(status => status.expiresAt = now);
+    state.statuses.push({id:uid('status'),owner:'me',type:draft.type,text:draft.text.trim(),color:draft.color,mediaId:draft.mediaId || '',createdAt:now,expiresAt:now + 86400000,visibility:draft.visibility,likes:[]});
+    ui.statusDraft = null;
+    persist(); goBack(); toast('状态已发布，24 小时后结束');
+}
+function cleanupMedia() {
+    const unused = Object.values(state.media).filter(media => mediaReferences(media.id) === 0);
+    if (!unused.length) return toast('没有可清理的未引用文件');
+    showConfirm('清理未引用文件',`将删除 ${unused.length} 个未被聊天、朋友圈、状态或收藏引用的文件。`,() => {
+        unused.forEach(media => delete state.media[media.id]);
+        closeOverlay(); commit(); toast('清理完成');
+    },true,'清理');
+}
+function base64UTF8(text) {
+    const bytes = new TextEncoder().encode(text);
+    let binary = '';
+    for (let offset = 0; offset < bytes.length; offset += 8192) binary += String.fromCharCode(...bytes.subarray(offset,offset + 8192));
+    return btoa(binary);
+}
+function exportBackup() {
+    const date = new Date();
+    const name = `微信单机备份_${date.getFullYear()}${pad(date.getMonth()+1)}${pad(date.getDate())}_${pad(date.getHours())}${pad(date.getMinutes())}.json`;
+    const temporaryId = uid('backup');
+    state.media[temporaryId] = {id:temporaryId,name,type:'application/json',size:0,data:'data:application/json;base64,' + base64UTF8(JSON.stringify(state)),createdAt:Date.now()};
+    exportMedia(temporaryId);
+    delete state.media[temporaryId];
+}
+function importBackup() {
+    const input = document.createElement('input');
+    input.type = 'file'; input.accept = '.json,application/json';
+    input.onchange = async () => {
+        const file = input.files?.[0]; if (!file) return;
+        try {
+            const candidate = validateBackup(JSON.parse(await file.text()));
+            showConfirm('恢复备份','当前本机数据将被备份内容替换。AI Keychain 密钥会保留。',async () => {
+                state = candidate;
+                await persist();
+                closeOverlay(); switchTab('chats'); toast('恢复完成');
+            },true,'恢复');
+        } catch (error) { toast('恢复失败：' + error.message,4000); }
+    };
+    input.click();
+}
+function clearAllData() {
+    showPrompt('清除全部数据','','输入“清除”以确认',value => {
+        if (value.trim() !== '清除') return toast('输入内容不一致');
+        showConfirm('最后确认','联系人、聊天、朋友圈、状态、收藏、媒体、设置和 AI 密钥都将被删除，且无法撤销。',async () => {
+            await Native.clearApiKey();
+            state = createDefaultState();
+            ui.momentDraft = null; ui.statusDraft = null; ui.aiKeyValue = '';
+            await persist(); closeOverlay(); switchTab('chats'); toast('已恢复初始状态');
+        },true,'全部清除');
+    });
+}
+function syncAIIdentity() {
+    const ai = state.settings.ai;
+    const contact = contactById('ai');
+    contact.name = ai.personaName.trim() || '小满';
+    contact.signature = (ai.relationship || '朋友') + ' · 本地 AI';
+    const chat = chatById('chat_ai');
+    if (chat) chat.name = contact.name;
+}
+function captureAIForm() {
+    const form = document.getElementById('ai-settings-form');
+    if (!form) return {key:ui.aiKeyValue || ''};
+    const data = new FormData(form), ai = state.settings.ai;
+    ai.endpoint = String(data.get('endpoint') || '').trim();
+    ai.model = String(data.get('model') || '').trim() || 'deepseek-chat';
+    ai.mediaEndpoint = String(data.get('mediaEndpoint') || '').trim();
+    ai.mediaModel = String(data.get('mediaModel') || '').trim();
+    ai.systemPrompt = String(data.get('systemPrompt') || '').trim();
+    ai.temperature = clamp(Number(data.get('temperature')) || 0,0,2);
+    ai.maxTokens = clamp(Math.round(Number(data.get('maxTokens')) || 2048),64,8192);
+    ai.contextCount = clamp(Math.round(Number(data.get('contextCount')) || 20),2,60);
+    ai.personaName = String(data.get('personaName') || '').trim() || '小满';
+    ai.personality = String(data.get('personality') || '').trim();
+    ai.speakingStyle = String(data.get('speakingStyle') || '').trim();
+    ai.relationship = String(data.get('relationship') || '').trim();
+    ai.customPrompt = String(data.get('customPrompt') || '').trim();
+    ai.replySpeed = String(data.get('replySpeed') || 'natural');
+    ai.proactivity = clamp(Math.round(Number(data.get('proactivity')) || 0),0,100);
+    ai.quietStart = String(data.get('quietStart') || '23:00');
+    ai.quietEnd = String(data.get('quietEnd') || '07:00');
+    return {key:String(data.get('apiKey') || '').trim()};
+}
+async function saveAISettings(showMessage = true) {
+    const {key} = captureAIForm();
+    const ai = state.settings.ai;
+    let url;
+    try { url = new URL(ai.endpoint); } catch (error) { throw new Error('接口地址格式无效'); }
+    if (url.protocol !== 'https:') throw new Error('AI 接口必须使用 HTTPS');
+    if (ai.mediaEndpoint) {
+        let mediaURL;
+        try { mediaURL = new URL(ai.mediaEndpoint); } catch (error) { throw new Error('多模态接口地址格式无效'); }
+        if (mediaURL.protocol !== 'https:') throw new Error('多模态接口必须使用 HTTPS');
+    }
+    await Native.saveApiKey(key);
+    ui.aiKeyValue = key;
+    syncAIIdentity();
+    await persist();
+    if (showMessage) toast('AI 设置已保存');
+    return key;
+}
+function personaPrompt() {
+    const ai = state.settings.ai;
+    return `${ai.systemPrompt}\n你的名字是“${ai.personaName}”。性格：${ai.personality}。说话方式：${ai.speakingStyle}。你和用户的关系：${ai.relationship}。补充要求：${ai.customPrompt || '无'}。\n请像熟悉的聊天伙伴一样自然回应，不要反复自我介绍，不要刻意总结，不要滥用列表。你可以表现得亲切自然，但始终是 AI，不要声称自己是人类或编造真实经历。`;
+}
+function parseAIResponse(code, body) {
+    if (code < 0) throw new Error(body || '网络请求失败');
+    let data;
+    try { data = JSON.parse(body); } catch (error) { throw new Error(code >= 400 ? `接口返回 ${code}：${body.slice(0,240)}` : '接口返回的不是有效 JSON'); }
+    if (code < 200 || code >= 300) throw new Error(data?.error?.message || data?.message || `接口返回 ${code}`);
+    const message = data?.choices?.[0]?.message;
+    const content = (message?.content || '').trim();
+    if (!content) throw new Error('接口没有返回可显示的聊天内容');
+    return content;
+}
+async function requestAIText(messages, options = {}) {
+    const ai = state.settings.ai;
+    const key = await Native.getApiKey();
+    if (!key) throw new Error('尚未填写 API Key');
+    const response = await Native.aiRequest(ai.endpoint,key,{
+        model:ai.model,messages,temperature:options.temperature ?? ai.temperature,
+        max_tokens:options.maxTokens || ai.maxTokens,stream:false
+    });
+    return parseAIResponse(response.code,response.body);
+}
+async function testAIConnection() {
+    if (ui.aiTesting) return;
+    try {
+        const key = await saveAISettings(false);
+        if (!key) throw new Error('请先填写 API Key');
+        ui.aiTesting = true; ui.aiTestMessage = ''; render();
+        const response = await Native.aiRequest(state.settings.ai.endpoint,key,{
+            model:state.settings.ai.model,
+            messages:[{role:'system',content:'你是接口连接测试助手。'},{role:'user',content:'请只回复：连接成功'}],
+            temperature:0,max_tokens:16,stream:false
+        });
+        const content = parseAIResponse(response.code,response.body);
+        ui.aiTestMessage = '连接成功：' + content.slice(0,80);
+    } catch (error) {
+        ui.aiTestMessage = '失败：' + error.message;
+    } finally {
+        ui.aiTesting = false;
+        if (ui.view === 'aiSettings') render();
+    }
+}
+async function extractVideoFrames(media, count = 3) {
+    const video = document.createElement('video');
+    video.muted = true; video.playsInline = true; video.preload = 'auto'; video.src = media.data;
+    await new Promise((resolve,reject) => {
+        const timer = setTimeout(() => reject(new Error('视频读取超时')),20000);
+        video.onloadedmetadata = () => { clearTimeout(timer); resolve(); };
+        video.onerror = () => { clearTimeout(timer); reject(new Error('当前视频格式无法解码')); };
+    });
+    const duration = Number.isFinite(video.duration) && video.duration > 0 ? video.duration : 1;
+    const frames = [];
+    for (let index = 0; index < count; index++) {
+        const target = Math.min(duration - 0.05,Math.max(0.05,duration * (index + 1) / (count + 1)));
+        await new Promise((resolve,reject) => {
+            const timer = setTimeout(() => reject(new Error('视频抽帧超时')),12000);
+            video.onseeked = () => { clearTimeout(timer); resolve(); };
+            video.onerror = () => { clearTimeout(timer); reject(new Error('视频抽帧失败')); };
+            video.currentTime = target;
+        });
+        const canvas = document.createElement('canvas');
+        const ratio = Math.min(1,768 / Math.max(video.videoWidth || 768,video.videoHeight || 768));
+        canvas.width = Math.max(1,Math.round((video.videoWidth || 768) * ratio));
+        canvas.height = Math.max(1,Math.round((video.videoHeight || 768) * ratio));
+        canvas.getContext('2d').drawImage(video,0,0,canvas.width,canvas.height);
+        frames.push(canvas.toDataURL('image/jpeg',0.78));
+    }
+    video.removeAttribute('src'); video.load();
+    return {frames,duration};
+}
+async function requestMediaText(allMessages) {
+    const ai = state.settings.ai;
+    let lastAssistant = -1;
+    allMessages.forEach((message,index) => { if (message.sender === 'ai') lastAssistant = index; });
+    const batch = allMessages.slice(lastAssistant + 1).filter(message => message.sender === 'me');
+    const batchIds = new Set(batch.map(message => message.id));
+    const history = allMessages.filter(message => !batchIds.has(message.id)).slice(-ai.contextCount).map(message => ({role:message.sender === 'me' ? 'user' : 'assistant',content:message.type === 'text' ? message.text : '[历史媒体消息]'}));
+    const text = batch.filter(message => message.type === 'text').map(message => message.text).join('\n') || '请分析我刚刚发送的媒体内容，并自然回应。';
+    const parts = [{type:'text',text}];
+    let imageCount = 0;
+    for (const message of batch) {
+        const media = mediaById(message.mediaId);
+        if (!media || imageCount >= 6) continue;
+        if (message.type === 'image') {
+            parts.push({type:'image_url',image_url:{url:media.data}}); imageCount++;
+        } else if (message.type === 'video') {
+            const frameCount = batch.length > 1 ? 2 : 3;
+            const sampled = await extractVideoFrames(media,frameCount);
+            for (const frame of sampled.frames) {
+                if (imageCount >= 6) break;
+                parts.push({type:'image_url',image_url:{url:frame}}); imageCount++;
+            }
+            parts[0].text += `\n视频时长约 ${sampled.duration.toFixed(1)} 秒，以上为按时间抽取的画面。`;
+        }
+    }
+    if (imageCount === 0) throw new Error('没有可发送给视觉模型的图片画面');
+    const key = await Native.getApiKey();
+    if (!key) throw new Error('尚未填写 API Key');
+    const response = await Native.aiRequest(ai.mediaEndpoint || ai.endpoint,key,{model:ai.mediaModel,messages:[{role:'system',content:personaPrompt()},...history,{role:'user',content:parts}],temperature:ai.temperature,max_tokens:ai.maxTokens,stream:false});
+    return parseAIResponse(response.code,response.body);
+}
+async function sendAIResponse(chatId) {
+    const chat = chatById(chatId);
+    if (!chat || contactById(chat.contactId).kind !== 'ai') return;
+    if (!state.settings.ai.enabled) {
+        addMessage(chatId,{sender:'ai',type:'text',text:'AI 尚未启用。请前往“我 → 设置 → AI 服务与人设”填写接口并开启。',error:true});
+        commit(); return;
+    }
+    if (ui.aiTypingChats.has(chatId)) return;
+    ui.aiTypingChats.add(chatId);
+    if (ui.view === 'chat' && ui.params.id === chatId) render();
+    const speed = state.settings.ai.replySpeed;
+    await wait(speed === 'instant' ? 250 + Math.random() * 400 : speed === 'slow' ? 1800 + Math.random() * 2200 : 700 + Math.random() * 1200);
+    try {
+        const all = messagesForChat(chatId).filter(message => !message.error && !message.recalled);
+        let lastAssistantIndex = -1;
+        all.forEach((message,index) => { if (message.sender === 'ai') lastAssistantIndex = index; });
+        const hasRecentMedia = all.slice(lastAssistantIndex + 1).some(message => message.sender === 'me' && ['image','video'].includes(message.type));
+        let content;
+        if (state.settings.ai.mediaModel && hasRecentMedia) {
+            content = await requestMediaText(all);
+        } else {
+            const history = all.slice(-state.settings.ai.contextCount).map(message => ({
+                role:message.sender === 'me' ? 'user' : 'assistant',
+                content:message.type === 'text' ? message.text : `[用户发送了${message.type === 'image' ? '一张图片' : message.type === 'video' ? '一个视频' : message.type === 'audio' ? '一条语音' : '一个文件'}，当前未配置视觉模型，不能查看媒体内容，请如实说明]`
+            }));
+            content = await requestAIText([{role:'system',content:personaPrompt()},...history]);
+        }
+        await wait(Math.min(1600,content.length * 18));
+        addMessage(chatId,{sender:'ai',type:'text',text:content});
+    } catch (error) {
+        addMessage(chatId,{sender:'ai',type:'text',text:'调用失败：' + error.message + '\n请检查 AI 设置、网络、模型能力和接口额度。',error:true});
+    } finally {
+        ui.aiTypingChats.delete(chatId);
+        commit();
+    }
+}
+function isQuietTime() {
+    const ai = state.settings.ai;
+    const [startHour,startMinute] = ai.quietStart.split(':').map(Number);
+    const [endHour,endMinute] = ai.quietEnd.split(':').map(Number);
+    const start = startHour * 60 + startMinute, end = endHour * 60 + endMinute;
+    const now = new Date(), current = now.getHours() * 60 + now.getMinutes();
+    if (start === end) return false;
+    return start < end ? current >= start && current < end : current >= start || current < end;
+}
+const aiScheduledMoments = new Set();
+function localMomentComment(moment) {
+    if (moment.mediaIds?.some(id => mediaById(id)?.type.startsWith('video/'))) return randomItem(['看到你分享新视频了，最近的生活挺有滋味。','这条动态挺有记录意义的，留着以后回看也很好。']);
+    if (moment.mediaIds?.length) return randomItem(['看到你分享新照片了，愿这份好心情多停留一会儿。','这组记录挺有生活感的，最近过得不错呀。']);
+    return randomItem(['看你最近的状态不错，替你开心。','这种想法挺好的，慢慢来，会越来越清晰。','看完还挺有共鸣的，愿今天也顺顺利利。']);
+}
+function scheduleAIInteractions(moment) {
+    if (!moment || moment.author !== 'me' || moment.aiInteracted || aiScheduledMoments.has(moment.id)) return;
+    const ai = state.settings.ai;
+    if (!ai.enabled || (!ai.autoLike && !ai.autoComment)) { moment.aiInteracted = true; persist(); return; }
+    aiScheduledMoments.add(moment.id);
+    const likeDelay = 2500 + Math.random() * (110 - ai.proactivity) * 90;
+    const commentDelay = likeDelay + 4500 + Math.random() * 9000;
+    const finish = () => {
+        const current = state.moments.find(item => item.id === moment.id);
+        if (!current) return;
+        const likeDone = !ai.autoLike || current.aiLiked;
+        const commentDone = !ai.autoComment || current.aiCommented;
+        current.aiInteracted = !!(likeDone && commentDone);
+        if (current.aiInteracted) aiScheduledMoments.delete(current.id);
+        persist();
+        if (['moments','contactMoments'].includes(ui.view)) render();
+    };
+    if (ai.autoLike) setTimeout(() => {
+        const current = state.moments.find(item => item.id === moment.id);
+        if (!current || isQuietTime()) { aiScheduledMoments.delete(moment.id); return; }
+        current.likes = current.likes || [];
+        if (!current.likes.includes('ai')) current.likes.push('ai');
+        current.aiLiked = true;
+        finish();
+    },likeDelay);
+    if (ai.autoComment) setTimeout(async () => {
+        const current = state.moments.find(item => item.id === moment.id);
+        if (!current || isQuietTime()) { aiScheduledMoments.delete(moment.id); return; }
+        let comment = '';
+        try {
+            const mediaCount = current.mediaIds?.length || 0;
+            comment = await requestAIText([
+                {role:'system',content:personaPrompt() + '\n你现在要以 AI 身份给朋友的朋友圈写一条自然评论。评论控制在 8 到 45 个汉字，不要称呼自己，不要使用列表，不要编造你看到了图片里的具体内容。'},
+                {role:'user',content:`朋友圈正文：${current.text || '（无文字）'}\n附件数量：${mediaCount}。请写一条评论。`}
+            ],{maxTokens:100,temperature:Math.min(1.2,ai.temperature + 0.2)});
+        } catch (error) {
+            if (ai.localFallback) comment = localMomentComment(current);
+            else console.warn('AI comment skipped',error);
+        }
+        if (comment) {
+            current.comments = current.comments || [];
+            current.comments.push({id:uid('comment'),author:'ai',text:comment.replace(/^评论[:：]/,'').trim(),time:Date.now(),localFallback:!comment ? true : undefined});
+        }
+        current.aiCommented = true;
+        finish();
+    },commentDelay);
+}
+function processPendingAIInteractions() {
+    if (!state.settings.ai.enabled || isQuietTime()) return;
+    const cutoff = Date.now() - 86400000;
+    state.moments.filter(moment => moment.author === 'me' && !moment.aiInteracted && moment.time >= cutoff).forEach(scheduleAIInteractions);
+}
+async function maybeAIProactive() {
+    const ai = state.settings.ai;
+    if (!ai.enabled || !ai.proactiveChat || isQuietTime() || ui.aiTypingChats.has('chat_ai')) return;
+    if (Math.random() * 100 > Math.max(8,ai.proactivity)) return;
+    const now = Date.now(), last = state.lastAIProactive || 0;
+    const cooldown = 300000 + (100 - ai.proactivity) * 12000;
+    if (now - last < cooldown) return;
+    state.lastAIProactive = now;
+    let text = '';
+    try {
+        const recent = messagesForChat('chat_ai').slice(-6).map(message => ({role:message.sender === 'me' ? 'user' : 'assistant',content:message.type === 'text' ? message.text : '[媒体消息]'}));
+        text = await requestAIText([{role:'system',content:personaPrompt() + '\n请主动开启一段简短对话，一到两句即可，不要反复问在吗。'},...recent,{role:'user',content:'请主动发一条自然的新消息。'}],{maxTokens:100});
+    } catch (error) {
+        if (ai.localFallback) text = randomItem(['刚想到你，最近过得怎么样？','今天有没有什么让你开心的小事？','这会儿忙不忙？想随便聊两句。']);
+    }
+    if (text) addMessage('chat_ai',{sender:'ai',type:'text',text});
+    commit();
+}
+function startAIProactiveLoop() {
+    clearInterval(ui.aiInteractionTimer);
+    ui.aiInteractionTimer = setInterval(() => { processPendingAIInteractions(); maybeAIProactive(); },90000);
+    setTimeout(() => { processPendingAIInteractions(); maybeAIProactive(); },20000);
+}
+function selectedChatMedia(ids) {
+    const chat = activeChat();
+    if (!chat) return;
+    ids.forEach(mediaId => {
+        const media = mediaById(mediaId);
+        if (!media) return;
+        const type = media.type.startsWith('image/') ? 'image' : media.type.startsWith('video/') ? 'video' : media.type.startsWith('audio/') ? 'audio' : 'file';
+        addMessage(chat.id,{sender:'me',type,mediaId,fileName:media.name});
+    });
+    ui.composerPanel = '';
+    commit();
+    if (contactById(chat.contactId).kind === 'ai') sendAIResponse(chat.id);
+    else scheduleLocalReply(chat.id,'[媒体]');
+}
+function afterSimpleUserMessage(chat,text) {
+    commit();
+    if (contactById(chat.contactId).kind === 'ai') sendAIResponse(chat.id);
+    else scheduleLocalReply(chat.id,text);
+}
+const actions = {
+    'close-overlay':() => closeOverlay(),
+    'overlay-back':(data,element,event) => { if (event.target === element) closeOverlay(); },
+    'sheet-stop':() => {},
+    'confirm-overlay':() => { const callback = confirmCallback; closeOverlay(); if (callback) callback(); },
+    'back':() => goBack(),
+    'tab':data => switchTab(data.id),
+    'nav':data => navigate(data.view,data.id ? {id:data.id} : {}),
+    'show-main-plus':() => showMainPlus(),
+    'open-chat':data => openChat(data.id),
+    'open-contact':data => navigate('contactDetail',{id:data.id}),
+    'open-contact-chat':data => openContactChat(data.id),
+    'delete-contact':data => showConfirm('删除联系人','将删除该联系人、单聊记录、其朋友圈与状态；群聊中也会移除该联系人。',() => {
+        const removedChats = state.chats.filter(chat => chat.type === 'single' && chat.contactId === data.id).map(chat => chat.id);
+        state.contacts = state.contacts.filter(contact => contact.id !== data.id);
+        state.chats = state.chats.filter(chat => !removedChats.includes(chat.id));
+        state.messages = state.messages.filter(message => !removedChats.includes(message.chatId) && message.sender !== data.id);
+        state.chats.forEach(chat => { if (chat.type === 'group') chat.participants = chat.participants.filter(id => id !== data.id); });
+        state.moments = state.moments.filter(moment => moment.author !== data.id);
+        state.statuses = state.statuses.filter(status => status.owner !== data.id);
+        closeOverlay(); ui.view = 'main'; ui.tab = 'contacts'; ui.stack = []; commit(); toast('联系人已删除');
+    },true,'删除'),
+    'toggle-contact-star':(data,element) => { const contact = contactById(data.id); contact.star = !contact.star; element.classList.toggle('on',contact.star); element.setAttribute('aria-checked',contact.star); persist(); },
+    'toggle-contact-block':(data,element) => { const contact = contactById(data.id); contact.blocked = !contact.blocked; element.classList.toggle('on',contact.blocked); element.setAttribute('aria-checked',contact.blocked); persist(); },
+    'contact-moments':data => navigate('contactMoments',{id:data.id}),
+    'open-ai-settings':() => openAISettings(),
+    'chat-info':() => navigate('chatInfo',{id:activeChat()?.id}),
+    'new-moment':() => { ui.momentDraft = {text:'',mediaIds:[],location:'',visibility:'public',visibleTo:[],hiddenFrom:[]}; navigate('momentPublish'); },
+    'new-status':() => { ui.statusDraft = {type:'心情不错',text:'',color:'#07c160',mediaId:'',visibility:'public'}; navigate('statusEdit'); },
+    'toggle-voice':() => { ui.voiceMode = !ui.voiceMode; ui.composerPanel = ''; render(); },
+    'toggle-emotion':() => { ui.composerPanel = ui.composerPanel === 'emotion' ? '' : 'emotion'; render(); },
+    'toggle-more':() => { ui.composerPanel = ui.composerPanel === 'more' ? '' : 'more'; render(); },
+    'insert-face':data => insertFace(data.value),
+    'send-text':() => sendText(),
+    'pick-chat-image':() => chooseFiles({accept:'image/*',multiple:true},ids => selectedChatMedia(ids)),
+    'capture-chat-image':() => chooseFiles({accept:'image/*',capture:'environment'},ids => selectedChatMedia(ids)),
+    'pick-chat-video':() => chooseFiles({accept:'video/*'},ids => selectedChatMedia(ids)),
+    'pick-chat-file':() => chooseFiles({accept:'*/*'},ids => selectedChatMedia(ids)),
+    'send-location':() => { const chat = activeChat(); if (!chat) return; showPrompt('发送位置','','手动输入位置名称',value => { if (!value.trim()) return; addMessage(chat.id,{sender:'me',type:'text',text:'[位置] ' + value.trim()}); afterSimpleUserMessage(chat,'[位置] ' + value.trim()); }); },
+    'share-contact-card':() => { const chat = activeChat(); if (!chat) return; showSheet('分享名片',state.contacts.filter(c => c.kind !== 'assistant').map(contact => ({label:displayName(contact.id),action:'send-contact-card',data:`data-id="${contact.id}"`}))); },
+    'send-contact-card':data => { const chat = activeChat(), contact = contactById(data.id); if (!chat) return; closeOverlay(); const text = `[个人名片]\n${displayName(contact.id)}\n微信号：${contact.wxid || 'local_' + contact.id}`; addMessage(chat.id,{sender:'me',type:'text',text}); afterSimpleUserMessage(chat,text); },
+    'play-audio':(data,element) => playAudio(data.id,element),
+    'view-media':data => openViewer(data.id),
+    'export-media':data => exportMedia(data.id),
+    'copy-message':data => { const message = state.messages.find(item => item.id === data.id); closeOverlay(); if (message) copyText(message.text); },
+    'forward-message':data => showMessageForward(data.chat,data.id),
+    'favorite-message':data => favoriteMessage(data.chat,data.id),
+    'recall-message':data => { const message = state.messages.find(item => item.id === data.id); if (!message) return; if (message.sender !== 'me' || Date.now() - message.time > 120000) return toast('超过 2 分钟的消息不能撤回'); closeOverlay(); message.recalled = true; commit(); },
+    'delete-message':data => { closeOverlay(); state.messages = state.messages.filter(item => item.id !== data.id); commit(); toast('已删除本机消息'); },
+    'pick-forward-chat':data => { const callback = forwardCallback; forwardCallback = null; closeOverlay(); if (callback) callback(data.id); },
+    'moment-menu':(data,element) => {
+        const moment = state.moments.find(item => item.id === data.id); if (!moment) return;
+        const rect = element.getBoundingClientRect(), liked = (moment.likes || []).includes('me');
+        const width = moment.author === 'me' ? 304 : 224;
+        const left = Math.max(8,Math.min(window.innerWidth - width - 8,rect.right - width - 6));
+        const top = Math.max(70,rect.top - 58);
+        overlayRoot.innerHTML = `<div class="moment-menu-overlay" data-action="close-overlay"><div class="moment-popover" style="left:${left}px;top:${top}px;width:${width}px" data-action="sheet-stop"><button data-action="like-moment" data-id="${moment.id}">${icon('heart','small')}${liked ? '取消赞' : '赞'}</button><button data-action="comment-moment" data-id="${moment.id}">${icon('comment','small')}评论</button><button data-action="share-moment" data-id="${moment.id}">${icon('share','small')}发送</button>${moment.author === 'me' ? `<button data-action="delete-moment" data-id="${moment.id}">${icon('trash','small')}删除</button>` : ''}</div></div>`;
+    },
+    'reply-moment-comment':data => { const moment = state.moments.find(item => item.id === data.id); const comment = moment?.comments?.find(item => item.id === data.comment); if (!moment || !comment) return; showPrompt(`回复 ${displayName(comment.author)}`,'','写下你的回复…',value => { if (!value.trim()) return; moment.comments.push({id:uid('comment'),author:'me',replyTo:comment.author,text:value.trim(),time:Date.now()}); commit(); }); },
+    'like-moment':data => { closeOverlay(); const moment = state.moments.find(item => item.id === data.id); if (!moment) return; moment.likes = moment.likes || []; const index = moment.likes.indexOf('me'); if (index >= 0) moment.likes.splice(index,1); else moment.likes.push('me'); commit(); },
+    'comment-moment':data => { const moment = state.moments.find(item => item.id === data.id); if (!moment) return; showPrompt('评论','','写下你的评论…',value => { if (!value.trim()) return; moment.comments = moment.comments || []; moment.comments.push({id:uid('comment'),author:'me',text:value.trim(),time:Date.now()}); commit(); }); },
+    'share-moment':data => shareMoment(data.id),
+    'delete-moment':data => showConfirm('删除朋友圈','删除后无法恢复，确定删除这条朋友圈吗？',() => { state.moments = state.moments.filter(item => item.id !== data.id); closeOverlay(); commit(); },true,'删除'),
+    'open-message':data => { ui.highlightMessageId = data.id; openChat(data.chat); setTimeout(() => { document.getElementById('message-' + data.id)?.scrollIntoView({block:'center'}); ui.highlightMessageId = ''; },120); },
+    'open-moment':data => { navigate('moments',{highlight:data.id}); setTimeout(() => document.getElementById('moment-' + data.id)?.scrollIntoView({block:'center'}),100); },
+    'open-favorite':data => { const item = state.favorites.find(fav => fav.id === data.id); if (!item) return; showSheet('收藏操作',[{label:'转发给朋友',action:'forward-favorite',data:`data-id="${data.id}"`},{label:'删除收藏',action:'delete-favorite',data:`data-id="${data.id}"`,danger:true}]); },
+    'forward-favorite':data => { const item = state.favorites.find(fav => fav.id === data.id); if (!item) return; closeOverlay(); showChatPicker('发送给',chatId => { if (item.text) addMessage(chatId,{sender:'me',type:'text',text:item.text}); (item.mediaIds || []).forEach(mediaId => { const media = mediaById(mediaId); if (media) addMessage(chatId,{sender:'me',type:media.type.startsWith('image/') ? 'image' : media.type.startsWith('video/') ? 'video' : 'file',mediaId}); }); commit(); toast('已发送'); }); },
+    'delete-favorite':data => { closeOverlay(); state.favorites = state.favorites.filter(item => item.id !== data.id); commit(); toast('已删除收藏'); },
+    'new-tag':() => showPrompt('新建标签','','例如：家人',value => { const tag = value.trim(); if (!tag) return; state.customTags = state.customTags || []; if (!state.customTags.includes(tag)) state.customTags.push(tag); commit(); toast('标签已创建，可在联系人资料中分配'); }),
+    'delete-tag':data => showConfirm('删除标签',`将从所有联系人中移除“${data.tag}”标签。`,() => { state.contacts.forEach(contact => contact.tags = (contact.tags || []).filter(tag => tag !== data.tag)); state.customTags = (state.customTags || []).filter(tag => tag !== data.tag); closeOverlay(); commit(); },true,'删除'),
+    'choose-moment-source':() => showSheet('',[{label:'拍摄',action:'capture-moment-media'},{label:'从手机相册选择',action:'pick-moment-media'}]),
+    'pick-moment-media':() => { closeOverlay(); chooseFiles({accept:'image/*,video/*',multiple:true},(ids,files) => addMomentMedia(ids,files)); },
+    'capture-moment-media':() => { closeOverlay(); chooseFiles({accept:'image/*,video/*',capture:'environment'},(ids,files) => addMomentMedia(ids,files)); },
+    'remove-draft-media':data => { if (!ui.momentDraft) return; ui.momentDraft.mediaIds = ui.momentDraft.mediaIds.filter(id => id !== data.id); commit(); },
+    'toggle-moment-contact':data => { const draft = ui.momentDraft; if (!draft) return; const key = draft.visibility === 'include' ? 'visibleTo' : 'hiddenFrom'; const index = draft[key].indexOf(data.id); if (index >= 0) draft[key].splice(index,1); else draft[key].push(data.id); render(); },
+    'publish-moment':() => publishMoment(),
+    'like-status':data => { const status = state.statuses.find(item => item.id === data.id); if (!status) return; status.likes = status.likes || []; const index = status.likes.indexOf('me'); if (index >= 0) status.likes.splice(index,1); else status.likes.push('me'); commit(); },
+    'select-status-type':data => { ui.statusDraft.type = data.value; render(); },
+    'select-status-color':data => { ui.statusDraft.color = data.value; render(); },
+    'pick-status-media':() => chooseFiles({accept:'image/*,video/*'},ids => { ui.statusDraft.mediaId = ids[0] || ''; commit(); }),
+    'remove-status-media':() => { ui.statusDraft.mediaId = ''; commit(); },
+    'publish-status':() => publishStatus(),
+    'end-status':() => { const status = currentStatus('me'); if (status) status.expiresAt = Date.now(); commit(); toast('状态已结束'); },
+    'media-filter':data => { ui.mediaFilter = data.id; render(); },
+    'cleanup-media':() => cleanupMedia(),
+    'toggle-dark':() => { state.settings.theme = state.settings.theme === 'dark' ? 'light' : 'dark'; if (hasIOS) window.webkit.messageHandlers.localBridge.postMessage({action:'setTheme',theme:state.settings.theme}); commit(); },
+    'toggle-auto-reply':(data,element) => { state.settings.autoReply = !state.settings.autoReply; element.classList.toggle('on',state.settings.autoReply); element.setAttribute('aria-checked',state.settings.autoReply); persist(); },
+    'toggle-enter-send':(data,element) => { state.settings.enterSend = !state.settings.enterSend; element.classList.toggle('on',state.settings.enterSend); persist(); },
+    'toggle-notifications':(data,element) => { state.settings.notifications = !state.settings.notifications; element.classList.toggle('on',state.settings.notifications); persist(); },
+    'set-chat-bg':data => { state.settings.chatBackground = data.value; commit(); },
+    'toggle-ai-enabled':(data,element) => { state.settings.ai.enabled = !state.settings.ai.enabled; element.classList.toggle('on',state.settings.ai.enabled); element.setAttribute('aria-checked',state.settings.ai.enabled); persist(); },
+    'toggle-ai-like':(data,element) => { state.settings.ai.autoLike = !state.settings.ai.autoLike; element.classList.toggle('on',state.settings.ai.autoLike); persist(); },
+    'toggle-ai-comment':(data,element) => { state.settings.ai.autoComment = !state.settings.ai.autoComment; element.classList.toggle('on',state.settings.ai.autoComment); persist(); },
+    'toggle-ai-proactive':(data,element) => { state.settings.ai.proactiveChat = !state.settings.ai.proactiveChat; element.classList.toggle('on',state.settings.ai.proactiveChat); persist(); },
+    'toggle-ai-fallback':(data,element) => { state.settings.ai.localFallback = !state.settings.ai.localFallback; element.classList.toggle('on',state.settings.ai.localFallback); persist(); },
+    'toggle-key-visibility':(data,element) => { const input = element.parentElement.querySelector('input'); const show = input.type === 'password'; input.type = show ? 'text' : 'password'; element.textContent = show ? '隐藏' : '显示'; },
+    'test-ai':() => testAIConnection(),
+    'pick-profile-avatar':() => chooseFiles({accept:'image/*'},ids => { if (ids[0]) { state.profile.avatarMediaId = ids[0]; commit(); toast('头像已更新'); } }),
+    'pick-contact-avatar':data => chooseFiles({accept:'image/*'},ids => { if (ids[0]) { contactById(data.id).avatarMediaId = ids[0]; commit(); toast('联系人头像已更新'); } }),
+    'change-moment-cover':() => showSheet('朋友圈封面',[{label:'从相册选择封面',action:'pick-moment-cover'},{label:'恢复默认封面',action:'reset-moment-cover'}]),
+    'pick-moment-cover':() => { closeOverlay(); chooseFiles({accept:'image/*'},ids => { if (ids[0]) { state.profile.momentCoverMediaId = ids[0]; commit(); toast('封面已更新'); } }); },
+    'reset-moment-cover':() => { closeOverlay(); state.profile.momentCoverMediaId = ''; commit(); },
+    'export-backup':() => exportBackup(),
+    'import-backup':() => importBackup(),
+    'clear-all-data':() => clearAllData(),
+    'show-add-members':() => { ui.params.addMembers = true; render(); },
+    'add-group-member':data => { const chat = chatById(ui.params.id); if (chat && !chat.participants.includes(data.id)) chat.participants.push(data.id); ui.params.addMembers = false; commit(); },
+    'edit-group-name':() => { const chat = chatById(ui.params.id); showPrompt('群聊名称',chat?.name || '','输入群名称',value => { if (!value.trim() || !chat) return; chat.name = value.trim(); commit(); }); },
+    'toggle-chat-pin':(data,element) => { const chat = chatById(ui.params.id); chat.pinned = !chat.pinned; element.classList.toggle('on',chat.pinned); persist(); },
+    'toggle-chat-mute':(data,element) => { const chat = chatById(ui.params.id); chat.muted = !chat.muted; element.classList.toggle('on',chat.muted); persist(); },
+    'clear-chat-history':() => { const chat = chatById(ui.params.id); showConfirm('清空聊天记录','此操作只删除本机记录，且无法恢复。',() => { state.messages = state.messages.filter(message => message.chatId !== chat.id); closeOverlay(); commit(); toast('已清空'); },true,'清空'); },
+    'delete-chat':() => { const chat = chatById(ui.params.id); showConfirm('删除会话','将删除该会话及本机聊天记录。',() => { state.chats = state.chats.filter(item => item.id !== chat.id); state.messages = state.messages.filter(message => message.chatId !== chat.id); closeOverlay(); ui.view = 'main'; ui.tab = 'chats'; ui.stack = []; commit(); },true,'删除'); },
+    'unavailable':data => toast(`${data.feature || '该功能'}需要真实微信服务，单机版仅保留界面入口`,3200)
+};
+
+document.addEventListener('click',async event => {
+    const element = event.target.closest('[data-action]');
+    if (!element) return;
+    const action = element.dataset.action;
+    if (action === 'sheet-stop') { event.stopPropagation(); return; }
+    event.preventDefault();
+    event.stopPropagation();
+    const handler = actions[action];
+    if (!handler) { console.error('Unhandled action',action); return; }
+    try { await handler(element.dataset,element,event); }
+    catch (error) { console.error(error); toast(error.message || '操作失败',3500); }
+});
+
+const forms = {
+    'prompt':form => { const callback = promptCallback; const value = String(new FormData(form).get('value') || ''); closeOverlay(); if (callback) callback(value); },
+    'global-search':form => { ui.searchTerm = String(new FormData(form).get('term') || ''); ui.searchSubmitted = true; render(); },
+    'favorite-search':form => { ui.favoriteFilter = String(new FormData(form).get('term') || ''); render(); },
+    'new-contact':form => {
+        const data = new FormData(form), name = String(data.get('name') || '').trim();
+        if (!name) return toast('请填写名字');
+        const id = uid('contact');
+        const tags = String(data.get('tags') || '').split(/[,，]/).map(tag => tag.trim()).filter(Boolean);
+        state.contacts.push({id,kind:'person',name,remark:String(data.get('remark') || '').trim(),wxid:String(data.get('wxid') || '').trim() || 'local_' + id.slice(-6),signature:'',color:randomItem(['#5d8aa8','#bf8b56','#9b7fb8','#07c160']),letter:/[a-z]/i.test(name[0]) ? name[0].toUpperCase() : '#',star:false,blocked:false,tags,avatarMediaId:''});
+        const chat = {id:uid('chat'),type:'single',contactId:id,name,participants:['me',id],pinned:false,muted:false,unread:0,draft:'',updatedAt:Date.now()};
+        state.chats.push(chat); persist(); openChat(chat.id); toast('朋友已添加');
+    },
+    'new-group':form => {
+        const data = new FormData(form), members = data.getAll('members').map(String);
+        if (members.length < 2) return toast('请至少选择 2 位联系人');
+        const name = String(data.get('name') || '').trim() || members.slice(0,3).map(displayName).join('、') + '的群聊';
+        const chat = {id:uid('group'),type:'group',contactId:'',name,participants:['me',...members],pinned:false,muted:false,unread:0,draft:'',updatedAt:Date.now()};
+        state.chats.push(chat); persist(); openChat(chat.id); toast('群聊已创建');
+    },
+    'contact-edit':form => {
+        const contact = contactById(form.dataset.id), data = new FormData(form);
+        contact.remark = String(data.get('remark') || '').trim();
+        contact.tags = String(data.get('tags') || '').split(/[,，]/).map(tag => tag.trim()).filter(Boolean);
+        persist(); goBack(); toast('资料已保存');
+    },
+    'favorite-edit':form => {
+        const text = String(new FormData(form).get('text') || '').trim();
+        if (!text) return;
+        state.favorites.push({id:uid('fav'),type:'note',text,mediaIds:[],source:'手动收藏',createdAt:Date.now()});
+        persist(); goBack(); toast('已收藏');
+    },
+    'ai-settings':async () => { await saveAISettings(true); },
+    'profile':form => {
+        const data = new FormData(form);
+        state.profile.name = String(data.get('name') || '').trim() || '本机用户';
+        state.profile.wxid = String(data.get('wxid') || '').trim() || 'local_user';
+        state.profile.signature = String(data.get('signature') || '').trim();
+        state.profile.region = String(data.get('region') || '').trim() || '本机';
+        persist(); goBack(); toast('个人资料已保存');
+    }
+};
+document.addEventListener('submit',async event => {
+    const form = event.target.closest('form[data-form]');
+    if (!form) return;
+    event.preventDefault();
+    const handler = forms[form.dataset.form];
+    if (!handler) return;
+    try { await handler(form); } catch (error) { console.error(error); toast(error.message || '保存失败',3500); }
+});
+document.addEventListener('input',event => {
+    const target = event.target;
+    if (target.id === 'message-input') {
+        const chat = activeChat(); if (chat) { chat.draft = target.value; persist(); }
+        target.style.height = 'auto'; target.style.height = Math.min(110,target.scrollHeight) + 'px';
+    }
+    if (target.dataset.input === 'moment-text' && ui.momentDraft) ui.momentDraft.text = target.value;
+    if (target.dataset.input === 'moment-location' && ui.momentDraft) ui.momentDraft.location = target.value;
+    if (target.dataset.input === 'status-text' && ui.statusDraft) ui.statusDraft.text = target.value;
+    if (target.dataset.input === 'proactivity') { const output = document.getElementById('proactivity-value'); if (output) output.textContent = target.value; }
+});
+document.addEventListener('change',event => {
+    const target = event.target;
+    if (target.dataset.change === 'moment-visibility' && ui.momentDraft) { ui.momentDraft.visibility = target.value; render(); }
+    if (target.dataset.change === 'status-visibility' && ui.statusDraft) ui.statusDraft.visibility = target.value;
+    if (target.dataset.change === 'font-scale') { state.settings.fontScale = Number(target.value); commit(); }
+});
+document.addEventListener('keydown',event => {
+    if (event.key === 'Escape') { if (overlayRoot.innerHTML) closeOverlay(); else if (ui.view !== 'main') goBack(); }
+    if (event.target.id === 'message-input' && event.key === 'Enter' && !event.shiftKey && state.settings.enterSend) { event.preventDefault(); sendText(); }
+});
+
+let longPressTimer = 0;
+let longPressFired = false;
+function clearLongPress() { clearTimeout(longPressTimer); longPressTimer = 0; }
+document.addEventListener('pointerdown',event => {
+    if (event.target.closest('#voice-record')) { event.preventDefault(); startVoiceRecording(); return; }
+    const target = event.target.closest('[data-longpress]');
+    if (!target) return;
+    longPressFired = false;
+    longPressTimer = setTimeout(() => {
+        longPressFired = true;
+        if (target.dataset.longpress === 'message') messageActionSheet(target.dataset.chat,target.dataset.id);
+        if (target.dataset.longpress === 'chat') {
+            const chat = chatById(target.dataset.id); if (!chat) return;
+            showSheet(chatName(chat),[{label:chat.pinned ? '取消置顶' : '置顶',action:'quick-chat-pin',data:`data-id="${chat.id}"`},{label:'标为已读',action:'quick-chat-read',data:`data-id="${chat.id}"`},{label:'删除会话',action:'quick-chat-delete',data:`data-id="${chat.id}"`,danger:true}]);
+        }
+    },550);
+});
+document.addEventListener('pointerup',event => { clearLongPress(); if (event.target.closest('#voice-record')) { event.preventDefault(); stopVoiceRecording(false); } });
+document.addEventListener('pointercancel',() => { clearLongPress(); stopVoiceRecording(true); });
+document.addEventListener('pointermove',event => { if (longPressTimer && (Math.abs(event.movementX) + Math.abs(event.movementY) > 8)) clearLongPress(); });
+document.addEventListener('click',event => { if (longPressFired) { event.preventDefault(); event.stopPropagation(); longPressFired = false; } },true);
+document.addEventListener('contextmenu',event => {
+    const target = event.target.closest('[data-longpress]');
+    if (!target) return;
+    event.preventDefault();
+    if (target.dataset.longpress === 'message') messageActionSheet(target.dataset.chat,target.dataset.id);
+});
+actions['quick-chat-pin'] = data => { const chat = chatById(data.id); if (chat) chat.pinned = !chat.pinned; closeOverlay(); commit(); };
+actions['quick-chat-read'] = data => { const chat = chatById(data.id); if (chat) chat.unread = 0; closeOverlay(); commit(); };
+actions['quick-chat-delete'] = data => { closeOverlay(); showConfirm('删除会话','将删除该会话及本机聊天记录。',() => { state.chats = state.chats.filter(chat => chat.id !== data.id); state.messages = state.messages.filter(message => message.chatId !== data.id); closeOverlay(); commit(); },true,'删除'); };
+
+async function init() {
+    let loaded = null;
+    try {
+        database = await openDatabase();
+        loaded = await dbGet('state');
+    } catch (error) {
+        console.warn('IndexedDB unavailable, using localStorage',error);
+        storageFallback = true;
+        try { loaded = JSON.parse(localStorage.getItem('local_wechat_state') || 'null'); } catch (parseError) { loaded = null; }
+    }
+    state = migrateState(loaded);
+    syncAIIdentity();
+    render();
+    persist();
+    if (hasIOS) window.webkit.messageHandlers.localBridge.postMessage({action:'setTheme',theme:state.settings.theme});
+    startAIProactiveLoop();
+    window.__LOCAL_WECHAT_READY__ = true;
+}
+init().catch(error => {
+    console.error(error);
+    appEl.innerHTML = `<div class="empty"><div class="empty-title">应用初始化失败</div><div>${esc(error.message)}</div><button class="primary-btn" onclick="location.reload()">重新加载</button></div>`;
+});
+</script>
+</body>
+</html>

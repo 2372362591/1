@@ -1,0 +1,57 @@
+name: Build iOS 16.1 TrollStore IPA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["**"]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Build unsigned application
+        run: |
+          set -euo pipefail
+          BUILD_DIR="$RUNNER_TEMP/LocalWeChatBuild"
+          xcodebuild \
+            -project LocalWeChat.xcodeproj \
+            -scheme LocalWeChat \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            CONFIGURATION_BUILD_DIR="$BUILD_DIR" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            DEVELOPMENT_TEAM="" \
+            build
+          test -d "$BUILD_DIR/LocalWeChat.app"
+
+      - name: Package TrollStore IPA
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/Payload"
+          cp -R "$RUNNER_TEMP/LocalWeChatBuild/LocalWeChat.app" "$RUNNER_TEMP/Payload/"
+          cd "$RUNNER_TEMP"
+          zip -qry "$GITHUB_WORKSPACE/LocalWeChat-iOS16.1-TrollStore.ipa" Payload
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: LocalWeChat-iOS16.1-TrollStore
+          path: LocalWeChat-iOS16.1-TrollStore.ipa
+          if-no-files-found: error
+          retention-days: 14
